@@ -1,13 +1,10 @@
 NUM_GPUS=$1
 reader=$2
-scheduler=$3
-learning_rate=$4
-weight_decay=$5
-dropout=$6
-batch_size=$7
-steps=$8
-eval_freq=$9
-log_freq=100
+learning_rate=$3
+batch_size=$4
+steps=$5
+eval_freq=$6
+log_freq=50
 
 export PYTHONPATH=src
 
@@ -17,11 +14,11 @@ python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS \
   --dataset_reader deardr \
   --validation_dataset_reader deardr \
   --train_frontend_reader $reader \
-  --validation_frontend_reader fever_no_nei \
+  --validation_frontend_reader fevertest \
   --model_name_or_path t5-base \
   --output_dir ../deardr_work/experiments/${SLURM_ARRAY_JOB_ID}_${SLURM_ARRAY_TASK_ID}/reader=$reader,task=fever,lr=$learning_rate,weight_decay=$weight_decay,dropout=$dropout,batch_size=$batch_size,steps=$steps \
-  --train_file data/pretrain/train.jsonl \
-  --validation_file data/fever/dev.jsonl \
+  --train_file /deardr/wiki-pretraining/shuf_10k.jsonl \
+  --validation_file /fever/shared_task_dev.jsonl \
   --do_train \
   --do_eval \
   --overwrite_output_dir \
