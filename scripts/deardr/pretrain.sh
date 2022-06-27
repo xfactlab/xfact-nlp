@@ -21,7 +21,7 @@ python src/deardr/train.py \
   --output_dir /output \
   --train_file /deardr/wiki-pretraining/shuf_10k.jsonl \
   --validation_file /fever/shared_task_dev.jsonl \
-  --prefix_path /deardr/prefix-tree/wikipedia-titles-structure-pt.pkl \
+  --prefix_path /deardr/prefix-tree/wikipedia-titles-structured-pt.pkl \
   --do_train \
   --do_eval \
   --overwrite_output_dir \
