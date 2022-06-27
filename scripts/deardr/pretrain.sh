@@ -4,6 +4,7 @@ learning_rate=$3
 batch_size=$4
 steps=$5
 eval_freq=$6
+lr_scheduler_type=$7
 log_freq=50
 
 
