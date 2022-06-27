@@ -1,3 +1,4 @@
+import itertools
 import unicodedata
 
 from deardr.frontend.base_reader import Reader
@@ -12,8 +13,9 @@ def normalize(text):
 
 def get_pages(e):
     ev = set()
-    for page,line in e:
-        ev.add(recover(page))
+    for _,_, page,line in e:
+        if page is not None:
+            ev.add(recover(page))
 
     return list(ev)
 
@@ -34,9 +36,11 @@ class FEVERTestReader(Reader):
         if instance["label"] == "NOT ENOUGH INFO":
             return []
 
+        evidence = itertools.chain(*instance["evidence"])
         a = {
             "source": instance["claim"],
-            "entities": get_pages(instance["evidence"])
+            "entities": get_pages(evidence)
         }
 
-        yield a
+        if len(a["entities"]):
+            yield a
