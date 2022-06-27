@@ -253,7 +253,7 @@ def main():
         trainer.log_metrics("eval", metrics)
         trainer.save_metrics("eval", metrics)
 
-        experiment.log(epoch=trainer.state.epoch, payload={"eval/" + key: value for key, value in metrics.items()})
+        experiment.log(step=trainer.state.epoch, payload={"eval/" + key: value for key, value in metrics.items()})
 
     kwargs = {"finetuned_from": model_args.model_name_or_path, "tasks": "dear-dr"}
 
