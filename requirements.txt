@@ -2,4 +2,4 @@ transformers==4.16.2
 datasets
 torch
 fever-drqa
-comet_ml
+vessl

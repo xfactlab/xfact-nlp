@@ -1,12 +1,9 @@
 import logging
 import os
 import sys
-from dataclasses import dataclass, field
 from operator import itemgetter
-from typing import Optional
-from comet_ml import Experiment
 import transformers
-from torch import nn
+import vessl
 
 from transformers import (
     AutoConfig,
@@ -63,14 +60,14 @@ def main():
 
     logger.info(f"Training/evaluation parameters {training_args}")
     if training_args.should_log and (training_args.do_train or training_args.do_eval):
-        experiment = Experiment(
-            api_key="J60JdZqL6pTDlG7a81H7o40up",
-            workspace="j6mes",
-            project_name=data_args.project_name if data_args.project_name is not None else f"atm_{data_args.dataset_reader}",
-            experiment_key=data_args.experiment_name if data_args.experiment_name is not None else None
-        )
-
-        experiment.log_parameters(training_args.to_dict())
+        # experiment = Experiment(
+        #     api_key="J60JdZqL6pTDlG7a81H7o40up",
+        #     workspace="j6mes",
+        #     project_name=data_args.project_name if data_args.project_name is not None else f"atm_{data_args.dataset_reader}",
+        #     experiment_key=data_args.experiment_name if data_args.experiment_name is not None else None
+        # )
+        experiment = vessl
+        # experiment.log_parameters(training_args.to_dict())
     else:
         experiment = None
 
@@ -256,7 +253,7 @@ def main():
         trainer.log_metrics("eval", metrics)
         trainer.save_metrics("eval", metrics)
 
-        experiment.log_metrics({"eval/" + key: value for key, value in metrics.items()})
+        experiment.log(epoch=trainer.state.epoch, payload={"eval/" + key: value for key, value in metrics.items()})
 
     kwargs = {"finetuned_from": model_args.model_name_or_path, "tasks": "dear-dr"}
 
