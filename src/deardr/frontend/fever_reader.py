@@ -39,7 +39,8 @@ class FEVERTestReader(Reader):
         evidence = itertools.chain(*instance["evidence"])
         a = {
             "source": instance["claim"],
-            "entities": get_pages(evidence)
+            "entities": get_pages(evidence),
+            "instance": instance
         }
 
         if len(a["entities"]):
