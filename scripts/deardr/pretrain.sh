@@ -27,13 +27,12 @@ python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS \
   --logging_steps $log_freq \
   --save_steps $eval_freq \
   --eval_steps $eval_freq \
-  --num_train_epochs 3 \
-  --save_total_limit 2 \
+  --num_train_epochs 5 \
+  --save_total_limit 3 \
   --load_best_model_at_end \
   --metric_for_best_model macro_r_precision \
   --evaluation_strategy steps \
   --learning_rate $learning_rate \
-  --weight_decay $weight_decay \
   --per_device_train_batch_size $batch_size \
   --gradient_accumulation_steps $steps \
   --lr_scheduler_type $scheduler
