@@ -1,4 +1,6 @@
-from deardr.frontend.fever_reader import FEVERTestReader
+from deardr.frontend.fever import FEVERPageLevelReader, FEVERPageLevelReaderSkipNEI
+from deardr.frontend.hover import HOVERPageLevelReader
+from deardr.frontend.kilt import KILTPageLevelReader
 from deardr.frontend.yahoo import YahooAbstractReader
 from deardr.frontend.yahoo_sentsplit import YahooAbstractSentSplitReader
 from deardr.frontend.pretrain import PretrainPT, PretrainPTHLFiltered, PretrainHL, PretrainPTHL, PretrainHLFiltered
@@ -6,7 +8,10 @@ from deardr.frontend.pretrain import PretrainPT, PretrainPTHLFiltered, PretrainH
 frontend_types = {
     "yahoo": YahooAbstractReader,
     "yahoosent": YahooAbstractSentSplitReader,
-    "fevertest": FEVERTestReader,
+    "fever": FEVERPageLevelReaderSkipNEI,
+    "fevertest": FEVERPageLevelReader,
+    "hover": HOVERPageLevelReader,
+    "kilt": KILTPageLevelReader,
     "pretrain_pt": PretrainPT,
     "pretrain_hl": PretrainHL,
     "pretrain_pthl": PretrainPTHL,
