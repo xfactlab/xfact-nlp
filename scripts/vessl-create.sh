@@ -3,7 +3,7 @@ NUM_GPUS=${1:-1}
 vessl experiment create \
   --organization "kaist-jtlab" \
   --project "deardr" \
-  --image-url "j6mes/dev-env:build-18" \
+  --image-url "j6mes/dev-env:build-21" \
   --cluster "cluster-2080" \
   --resource "gpu-${NUM_GPUS}" \
   --command "bash -x scripts/deardr/pretrain.sh ${NUM_GPUS} \$reader \$learning_rate \$batch_size \$steps \$eval_freq \$lr_scheduler_type" \
