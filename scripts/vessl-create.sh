@@ -1,7 +1,7 @@
 vessl experiment create \
   --organization "kaist-jtlab" \
   --project "deardr" \
-  --image-url "j6mes/dev-env:build-1" \
+  --image-url "j6mes/dev-env:build-18" \
   --cluster "cluster-2080" \
   --resource "gpu-1" \
   --command "bash -x scripts/deardr/pretrain.sh 1 \$reader \$learning_rate \$batch_size \$steps \$eval_freq \$lr_scheduler_type" \

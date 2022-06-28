@@ -10,8 +10,8 @@ log_freq=50
 
 export PYTHONPATH=src
 
-#python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS \
-python src/deardr/train.py \
+#python src/deardr/train.py \
+python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS \
   --project_name DEARDR-ZEROSHOT \
   --dataset_reader deardr \
   --validation_dataset_reader deardr \
