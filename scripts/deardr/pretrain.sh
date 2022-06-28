@@ -31,6 +31,7 @@ python src/deardr/train.py \
   --eval_steps $eval_freq \
   --num_train_epochs 5 \
   --save_total_limit 3 \
+  --max_eval_samples 1000 \
   --load_best_model_at_end \
   --metric_for_best_model macro_r_precision \
   --evaluation_strategy steps \
