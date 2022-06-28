@@ -12,6 +12,7 @@ export PYTHONPATH=src
 
 #python src/deardr/train.py \
 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS \
+  src/deardr/train.py \
   --project_name DEARDR-ZEROSHOT \
   --dataset_reader deardr \
   --validation_dataset_reader deardr \
