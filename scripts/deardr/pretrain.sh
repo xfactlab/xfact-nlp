@@ -6,7 +6,7 @@ steps=$5
 eval_freq=$6
 scheduler=$7
 log_freq=50
-
+data_root=${DATA_ROOT:-/}
 
 export PYTHONPATH=src
 
@@ -20,9 +20,9 @@ python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS \
   --validation_frontend_reader fevertest \
   --model_name_or_path t5-base \
   --output_dir /output \
-  --train_file data/wiki-pretraining/shuf_10k.jsonl \
-  --validation_file data/fever/shared_task_dev.jsonl \
-  --prefix_path data/prefix-tree/wikipedia-titles-structured-pt.pkl \
+  --train_file ${data_root}/wiki-pretraining/shuf_10k.jsonl \
+  --validation_file ${data_root}/fever/shared_task_dev.jsonl \
+  --prefix_path ${data_root}/prefix-tree/wikipedia-titles-structured-pt.pkl \
   --do_train \
   --do_eval \
   --overwrite_output_dir \
