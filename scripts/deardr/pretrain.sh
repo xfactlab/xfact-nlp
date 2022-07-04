@@ -8,8 +8,6 @@ scheduler=$7
 log_freq=50
 data_root=${DATA_ROOT:-/}
 
-pip install -r requirements.txt
-
 export PYTHONPATH=src
 
 #python src/deardr/train.py \
