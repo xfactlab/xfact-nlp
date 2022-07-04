@@ -17,7 +17,7 @@ python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS \
   --dataset_reader deardr \
   --validation_dataset_reader deardr \
   --train_frontend_reader $reader \
-  --validation_frontend_reader fevertest \
+  --validation_frontend_reader fever \
   --model_name_or_path t5-base \
   --output_dir /output \
   --train_file ${data_root}/wiki-pretraining/shuf_10k.jsonl \
