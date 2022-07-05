@@ -14,8 +14,6 @@ def average_precision(actual, predicted):
 
 def lrap(actual, predicted):
     """
-    Label ranking average precision (LRAP) is the average over each ground truth label assigned
-    to each sample, of the ratio of true vs. total labels with lower score.
     If there is exactly one relevant label per sample, label ranking average precision is
     equivalent to the mean reciprocal rank.
     """
