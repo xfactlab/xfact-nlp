@@ -14,8 +14,7 @@ def average_precision(actual, predicted):
 
 def lrap(actual, predicted):
     """
-    If there is exactly one relevant label per sample, label ranking average precision is
-    equivalent to the mean reciprocal rank.
+    If there is exactly one relevant label per sample, label ranking average precision is equivalent to the mean reciprocal rank.
     """
 
 
