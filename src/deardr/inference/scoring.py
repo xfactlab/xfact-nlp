@@ -1,3 +1,4 @@
+from sklearn.metrics import average_precision_score
 def precision(actual, predicted):
     actual = set(actual)
     predicted = set(predicted)
@@ -8,6 +9,8 @@ def precision(actual, predicted):
         else 1.0
     )
 
+def average_precision(actual, predicted):
+    return average_precision_score(actual, predicted)
 
 def recall(actual, predicted):
     actual = set(actual)
