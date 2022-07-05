@@ -10,6 +10,9 @@ def precision(actual, predicted):
     )
 
 def average_precision(actual, predicted):
+    """
+    AP is averaged over all categories. Traditionally, this is called mAP. mAP score is calculated by taking the mean AP over all classes.
+    """
     return average_precision_score(actual, predicted)
 
 def lrap(actual, predicted):
