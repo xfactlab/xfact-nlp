@@ -1,4 +1,4 @@
-from sklearn.metrics import average_precision_score
+from sklearn.metrics import average_precision_score, label_ranking_average_precision_score
 def precision(actual, predicted):
     actual = set(actual)
     predicted = set(predicted)
@@ -11,6 +11,17 @@ def precision(actual, predicted):
 
 def average_precision(actual, predicted):
     return average_precision_score(actual, predicted)
+
+def lrap(actual, predicted):
+    """
+    Label ranking average precision (LRAP) is the average over each ground truth label assigned
+    to each sample, of the ratio of true vs. total labels with lower score.
+    If there is exactly one relevant label per sample, label ranking average precision is
+    equivalent to the mean reciprocal rank.
+    """
+
+
+    label_ranking_average_precision_score(actual, predicted)
 
 def recall(actual, predicted):
     actual = set(actual)
