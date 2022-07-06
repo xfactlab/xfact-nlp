@@ -189,7 +189,6 @@ def main():
     data_collator = lambda batch: DearDrCommonDataset.collate_fn(batch, tokenizer.pad_token_id)
 
     def compute_metrics(actual, predicted, **kwargs):
-
         return {
             "macro_recall": macro(max_over_many(recall), actual, predicted),
             "macro_precision": macro(max_over_many(precision), actual, predicted),

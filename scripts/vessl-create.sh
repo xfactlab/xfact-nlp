@@ -1,4 +1,4 @@
-echo "Which reference_id do you want to use? Press ENTER if you want to use 'HEAD'."
+echo "Which reference_id (ex. 6eb0bc12ac08ff95a68e61785001ac7270dfd62d) do you want to use? Press ENTER if you want to use 'HEAD'."
 read GIT_REF
 if [ "$GIT_REF" == "" ]
   then
