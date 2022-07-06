@@ -1,4 +1,4 @@
-echo "Which branch do you want to run your program? Press ENTER if you want to use 'HEAD'."
+echo "Which branch in 'git-ref' do you want to use? Press ENTER if you want to use 'HEAD'."
 read GIT_REF
 if [ "$GIT_REF" == "" ]
   then
