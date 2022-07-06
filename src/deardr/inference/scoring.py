@@ -24,6 +24,9 @@ def lrap(actual, predicted):
     https://scikit-learn.org/stable/modules/model_evaluation.html#label-ranking-average-precision
     If there is exactly one relevant label per sample, label ranking average precision is equivalent to the mean reciprocal rank.
     """
+    # just for debugging; will be deleted
+    print(actual)
+    print(predicted)
     return label_ranking_average_precision_score(actual, predicted)
 
 
