@@ -1,4 +1,5 @@
 from sklearn.metrics import average_precision_score, label_ranking_average_precision_score
+
 def precision(actual, predicted):
     actual = set(actual)
     predicted = set(predicted)

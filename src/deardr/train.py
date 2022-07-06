@@ -19,7 +19,7 @@ from deardr.dataset import DearDrCommonDataset, dataset_types
 from deardr.frontend import frontend_types, PretrainPT
 from deardr.inference.post_processing import post_process
 from deardr.inference.prefix_decoder import single_document_prefix, multi_document_prefix
-from deardr.inference.scoring import precision, recall, r_precision, macro, f1, max_over_many
+from deardr.inference.scoring import precision, recall, r_precision, macro, f1, max_over_many, average_precision, lrap
 from deardr.training.args import ModelArguments, DataTrainingArguments
 from deardr.training.comet_logging_callback import CometTrainingCallback
 from deardr.training.deardr_trainer import DearDrTrainer
@@ -194,7 +194,9 @@ def main():
             "macro_recall": macro(max_over_many(recall), actual, predicted),
             "macro_precision": macro(max_over_many(precision), actual, predicted),
             "macro_f1": macro(max_over_many(f1), actual, predicted),
-            "macro_r_precision": macro(max_over_many(r_precision), actual, predicted)
+            "macro_r_precision": macro(max_over_many(r_precision), actual, predicted),
+            "macro_lrap": macro(max_over_many(lrap), actual, predicted),
+            "macro_average_precision": macro(max_over_many(average_precision), actual, predicted)
         }
 
     logging_callback = CometTrainingCallback(experiment)
