@@ -21,7 +21,7 @@ def lrap(actual, predicted):
     """
 
 
-    label_ranking_average_precision_score(actual, predicted)
+    return label_ranking_average_precision_score(actual, predicted)
 
 def recall(actual, predicted):
     actual = set(actual)
