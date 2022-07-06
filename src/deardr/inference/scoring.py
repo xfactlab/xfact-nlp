@@ -1,13 +1,13 @@
 from sklearn.metrics import average_precision_score, label_ranking_average_precision_score
 
 def precision(actual, predicted):
+    print(actual)
+    print(predicted)
     actual = set(actual)
     predicted = set(predicted)
-
+    temp = sum(1.0 for p in predicted if p in actual) / float(len(predicted)) if len(predicted) else 1.0
     return (
-        sum(1.0 for p in predicted if p in actual) / float(len(predicted))
-        if len(predicted)
-        else 1.0
+        temp
     )
 
 
@@ -16,6 +16,8 @@ def average_precision(actual, predicted):
     https://scikit-learn.org/stable/modules/generated/sklearn.metrics.average_precision_score.html
     AP is averaged over all categories. Traditionally, this is called mAP. mAP score is calculated by taking the mean AP over all classes.
     """
+    actual = set(actual)
+    predicted = set(predicted)
     return average_precision_score(actual, predicted)
 
 
@@ -25,8 +27,8 @@ def lrap(actual, predicted):
     If there is exactly one relevant label per sample, label ranking average precision is equivalent to the mean reciprocal rank.
     """
     # just for debugging; will be deleted
-    print(actual)
-    print(predicted)
+    actual = set(actual)
+    predicted = set(predicted)
     return label_ranking_average_precision_score(actual, predicted)
 
 
