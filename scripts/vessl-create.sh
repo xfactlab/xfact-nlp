@@ -1,6 +1,5 @@
 NUM_GPUS=${1:-1}
-export TRANSFORMERS_CACHE=/cache/transformers
-export XDG_CACHE_HOME=/cache/pytorch
+
 vessl experiment create \
   --organization "kaist-jtlab" \
   --project "deardr" \
@@ -12,5 +11,5 @@ vessl experiment create \
   --git-ref "/root/deardr:github/j6mes-lab/deardr/HEAD" \
   --dataset "/data/:kaist-jtlab/deardr-dataset" \
   --dataset "/cache/:kaist-jtlab/cache" \
-  -h reader=pretrain_hl -h learning_rate=1e-5 -h batch_size=8 -h steps=1 -h eval_freq=400 -h lr_scheduler_type=linear -h DATA_ROOT=/data
-
+  -h reader=pretrain_hl -h learning_rate=1e-5 -h batch_size=8 -h steps=1 -h eval_freq=400 -h lr_scheduler_type=linear \
+  -h DATA_ROOT=/data -h TRANSFORMERS_CACHE=/cache/transformers -h XDG_CACHE_HOME=/cache/pytorch
