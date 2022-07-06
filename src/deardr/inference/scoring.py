@@ -9,6 +9,7 @@ def precision(actual, predicted):
         else 1.0
     )
 
+
 def average_precision(actual, predicted):
     """
     https://scikit-learn.org/stable/modules/generated/sklearn.metrics.average_precision_score.html
@@ -16,14 +17,14 @@ def average_precision(actual, predicted):
     """
     return average_precision_score(actual, predicted)
 
+
 def lrap(actual, predicted):
     """
     https://scikit-learn.org/stable/modules/model_evaluation.html#label-ranking-average-precision
     If there is exactly one relevant label per sample, label ranking average precision is equivalent to the mean reciprocal rank.
     """
-
-
     return label_ranking_average_precision_score(actual, predicted)
+
 
 def recall(actual, predicted):
     actual = set(actual)
