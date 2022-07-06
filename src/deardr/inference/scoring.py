@@ -11,12 +11,14 @@ def precision(actual, predicted):
 
 def average_precision(actual, predicted):
     """
+    https://scikit-learn.org/stable/modules/generated/sklearn.metrics.average_precision_score.html
     AP is averaged over all categories. Traditionally, this is called mAP. mAP score is calculated by taking the mean AP over all classes.
     """
     return average_precision_score(actual, predicted)
 
 def lrap(actual, predicted):
     """
+    https://scikit-learn.org/stable/modules/model_evaluation.html#label-ranking-average-precision
     If there is exactly one relevant label per sample, label ranking average precision is equivalent to the mean reciprocal rank.
     """
 
