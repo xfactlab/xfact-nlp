@@ -20,7 +20,7 @@ python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS \
   --validation_frontend_reader fever \
   --model_name_or_path t5-base \
   --output_dir /output \
-  --train_file ${data_root}/wiki-pretraining/shuf_10k.jsonl \
+  --train_file ${data_root}/wiki-pretraining/shuf_5.jsonl \
   --validation_file ${data_root}/fever/shared_task_dev.jsonl \
   --prefix_path ${data_root}/prefix-tree/wikipedia-titles-structured-pt.pkl \
   --do_train \
@@ -30,7 +30,7 @@ python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS \
   --logging_steps $log_freq \
   --save_steps $eval_freq \
   --eval_steps $eval_freq \
-  --num_train_epochs 5 \
+  --num_train_epochs 1 \
   --save_total_limit 3 \
   --max_eval_samples 1000 \
   --load_best_model_at_end \
