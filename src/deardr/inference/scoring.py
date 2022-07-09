@@ -4,7 +4,9 @@ def precision(actual, predicted):
     actual = set(actual)
     predicted = set(predicted)
     return (
-        sum(1.0 for p in predicted if p in actual) / float(len(predicted)) if len(predicted) else 1.0
+        sum(1.0 for p in predicted if p in actual) / float(len(predicted))
+         if len(predicted)
+         else 1.0
     )
 
 
