@@ -195,7 +195,7 @@ def main():
             "macro_precision": macro(max_over_many(precision), actual, predicted),
             "macro_f1": macro(max_over_many(f1), actual, predicted),
             "macro_r_precision": macro(max_over_many(r_precision), actual, predicted),
-            #"macro_lrap": macro(max_over_many(lrap), actual, predicted),
+            "macro_mean_reciprocal_rank": macro(max_over_many(mean_reciprocal_rank), actual, predicted),
             "macro_average_precision": macro(max_over_many(average_precision), actual, predicted)
         }
 
