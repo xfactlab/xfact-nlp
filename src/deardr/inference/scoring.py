@@ -1,4 +1,5 @@
-from sklearn.metrics import average_precision_score, label_ranking_average_precision_score
+import numpy as np
+
 
 def precision(actual, predicted):
     actual = set(actual)
@@ -10,14 +11,29 @@ def precision(actual, predicted):
     )
 
 
+def precision_at_k(r, k):
+    assert k >= 1
+    r = np.asarray(r)[:k] != 0
+    if r.size != k:
+        raise ValueError('Relevance score length < k')
+    return np.mean(r)
+
+
 def average_precision(actual, predicted):
     """
-    https://scikit-learn.org/stable/modules/generated/sklearn.metrics.average_precision_score.html
-    AP is averaged over all categories. Traditionally, this is called mAP. mAP score is calculated by taking the mean AP over all classes.
+    https://gist.github.com/bwhite/3726239
     """
-    actual = set(actual)
-    predicted = set(predicted)
-    return average_precision_score(actual, predicted)
+    r = []
+    for i, p in enumerate(predicted):
+        if len(actual) > i and actual[i] == predicted[i]:
+            r.append(1)
+        else:
+            r.append(0)
+    r = np.asarray(r) != 0
+    out = [precision_at_k(r, k + 1) for k in range(r.size) if r[k]]
+    if not out:
+        return 0.
+    return np.mean(out)
 
 
 def mean_reciprocal_rank(actual, predicted):
