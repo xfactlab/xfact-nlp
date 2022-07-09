@@ -1,13 +1,10 @@
 from sklearn.metrics import average_precision_score, label_ranking_average_precision_score
 
 def precision(actual, predicted):
-    print(actual)
-    print(predicted)
     actual = set(actual)
     predicted = set(predicted)
-    temp = sum(1.0 for p in predicted if p in actual) / float(len(predicted)) if len(predicted) else 1.0
     return (
-        temp
+        sum(1.0 for p in predicted if p in actual) / float(len(predicted)) if len(predicted) else 1.0
     )
 
 
@@ -21,16 +18,21 @@ def average_precision(actual, predicted):
     return average_precision_score(actual, predicted)
 
 
-def lrap(actual, predicted):
+def mean_reciprocal_rank(actual, predicted):
     """
-    https://scikit-learn.org/stable/modules/model_evaluation.html#label-ranking-average-precision
-    If there is exactly one relevant label per sample, label ranking average precision is equivalent to the mean reciprocal rank.
+    https://machinelearning.wtf/terms/mean-reciprocal-rank-mrr/
+    I assumed that the lists of evidences in the 1 index of evidences matrix were not sorted by relevance score.
+    This program is called with one query, so this program takes maximum of
+    reciprocal rank of elements in the actual
     """
-    # just for debugging; will be deleted
-    actual = set(actual)
-    predicted = set(predicted)
-    return label_ranking_average_precision_score(actual, predicted)
-
+    actual = list(actual)
+    predicted = list(predicted)
+    maximum = 0
+    if len(predicted):
+        for p in actual:
+            if p in predicted:
+                maximum = max(maximum, (1.0/(predicted.index(p)+1)))
+    return maximum
 
 def recall(actual, predicted):
     actual = set(actual)
