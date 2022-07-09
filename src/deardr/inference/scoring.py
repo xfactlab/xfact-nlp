@@ -47,7 +47,7 @@ def mean_reciprocal_rank(actual, predicted):
     predicted = list(predicted)
     maximum = 0
     if len(predicted) and len(actual):
-        for p in actual:
+        for p in actual[:1]:
             if p in predicted:
                 maximum = max(maximum, (1.0/(predicted.index(p)+1)))
     return maximum
