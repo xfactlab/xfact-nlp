@@ -19,7 +19,7 @@ from deardr.dataset import DearDrCommonDataset, dataset_types
 from deardr.frontend import frontend_types, PretrainPT
 from deardr.inference.post_processing import post_process
 from deardr.inference.prefix_decoder import single_document_prefix, multi_document_prefix
-from deardr.inference.scoring import precision, recall, r_precision, macro, f1, max_over_many, average_precision, lrap
+from deardr.inference.scoring import precision, recall, r_precision, macro, f1, max_over_many, average_precision, mean_reciprocal_rank
 from deardr.training.args import ModelArguments, DataTrainingArguments
 from deardr.training.comet_logging_callback import CometTrainingCallback
 from deardr.training.deardr_trainer import DearDrTrainer
