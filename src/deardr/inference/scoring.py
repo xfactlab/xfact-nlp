@@ -37,20 +37,18 @@ def average_precision(actual, predicted):
 
 
 def mean_reciprocal_rank(actual, predicted):
-    """
-    https://machinelearning.wtf/terms/mean-reciprocal-rank-mrr/
-    I assumed that the lists of evidences in the 1 index of evidences matrix were not sorted by relevance score.
-    This program is called with one query, so this program takes maximum of
-    reciprocal rank of elements in the actual
-    """
     actual = list(actual)
     predicted = list(predicted)
-    maximum = 0
+    lowest_idx = 1
+    found = False
     if len(predicted) and len(actual):
-        for p in actual[:1]:
-            if p in predicted:
-                maximum = max(maximum, (1.0/(predicted.index(p)+1)))
-    return maximum
+        for p in reversed(predicted):
+            if p in actual and not found:
+                found = True
+            elif p not in actual and found:
+                lowest_idx += 1
+    return 0 if not found else 1. / lowest_idx
+
 
 def recall(actual, predicted):
     actual = set(actual)
