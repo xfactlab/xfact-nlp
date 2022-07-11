@@ -13,6 +13,7 @@ def lrp(actual, predicted):
                 found = True
             elif p not in actual and found:
                 rank += 1
+                denom += 1
             elif p not in actual:
                 denom += 1
     return found, rank, denom
