@@ -65,14 +65,14 @@ def average_precision_corrected(actual, predicted):
     """
     r = []
     found = False
-    for i, p in enumerate(predicted):
+    for i, p in enumerate(reversed(predicted)):
         if len(actual) > i and actual[i] == predicted[i] and not found:
             found = True
-            r.append(1)
+            r.insert(0, 1)
         elif len(actual) > i and actual[i] == predicted[i]:
             continue
         else:
-            r.append(0)
+            r.insert(0, 0)
     r = np.asarray(r) != 0
     out = [precision_at_k(r, k + 1) for k in range(r.size) if r[k]]
     if not out:
@@ -134,7 +134,5 @@ def max_over_many(method):
         scores = []
         for actual in actual_many:
             scores.append(method(actual, predicted))
-
         return max(scores)
-
     return apply_multi
