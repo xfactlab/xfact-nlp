@@ -1,6 +1,23 @@
 import numpy as np
 
 
+def lrp(actual, predicted):
+    actual = list(actual)
+    predicted = list(predicted)
+    rank = 1
+    denom = 1
+    found = False
+    if len(predicted) and len(actual):
+        for p in reversed(predicted):
+            if p in actual and not found:
+                found = True
+            elif p not in actual and found:
+                rank += 1
+            elif p not in actual:
+                denom += 1
+    return found, rank, denom
+
+
 def precision(actual, predicted):
     actual = set(actual)
     predicted = set(predicted)
@@ -9,6 +26,11 @@ def precision(actual, predicted):
         if len(predicted)
         else 1.0
     )
+
+
+def precision_corrected(actual, predicted):
+    found, _, denom = lrp(actual, predicted)
+    return 0 if not found else 1. / denom
 
 
 def precision_at_k(r, k):
@@ -36,18 +58,36 @@ def average_precision(actual, predicted):
     return np.mean(out)
 
 
-def mean_reciprocal_rank(actual, predicted):
-    actual = list(actual)
-    predicted = list(predicted)
-    lowest_idx = 1
+def average_precision_corrected(actual, predicted):
+    """
+    https://gist.github.com/bwhite/3726239
+    """
+    r = []
     found = False
-    if len(predicted) and len(actual):
-        for p in reversed(predicted):
-            if p in actual and not found:
-                found = True
-            elif p not in actual and found:
-                lowest_idx += 1
-    return 0 if not found else 1. / lowest_idx
+    for i, p in enumerate(predicted):
+        if len(actual) > i and actual[i] == predicted[i] and not found:
+            found = True
+            r.append(1)
+        elif len(actual) > i and actual[i] == predicted[i]:
+            continue
+        else:
+            r.append(0)
+    r = np.asarray(r) != 0
+    out = [precision_at_k(r, k + 1) for k in range(r.size) if r[k]]
+    if not out:
+        return 0.
+    return np.mean(out)
+
+
+def reciprocal_rank(actual, predicted):
+    """
+    https://machinelearning.wtf/terms/mean-reciprocal-rank-mrr/
+    I assumed that the lists of evidences in the 1 index of evidences matrix were not sorted by relevance score.
+    This program is called with one query, so this program takes maximum of
+    reciprocal rank of elements in the actual
+    """
+    found, rank, _ = lrp(actual, predicted)
+    return 0 if not found else 1. / rank
 
 
 def recall(actual, predicted):
@@ -60,6 +100,11 @@ def recall(actual, predicted):
     )
 
 
+def recall_corrected(actual, predicted):
+    found, _, denom = lrp(predicted, actual)
+    return 0 if not found else 1. / denom
+
+
 def r_precision(actual, predicted):
     actual = set(actual)
 
@@ -70,8 +115,6 @@ def r_precision(actual, predicted):
         sum(1.0 for p in r_predicted if p in actual) / float(R)
         if R
         else 1.0
-
-
     )
 
 
