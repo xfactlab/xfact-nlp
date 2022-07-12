@@ -8,9 +8,10 @@ import vessl
 from transformers import (
     AutoConfig,
     AutoTokenizer,
+    BartTokenizer,
     HfArgumentParser,
     TrainingArguments,
-    set_seed, T5ForConditionalGeneration,
+    set_seed, T5ForConditionalGeneration,BartForConditionalGeneration
 )
 from transformers.trainer_utils import get_last_checkpoint, EvalLoopOutput
 from transformers.utils import check_min_version
@@ -19,7 +20,8 @@ from deardr.dataset import DearDrCommonDataset, dataset_types
 from deardr.frontend import frontend_types, PretrainPT
 from deardr.inference.post_processing import post_process
 from deardr.inference.prefix_decoder import single_document_prefix, multi_document_prefix
-from deardr.inference.scoring import precision, recall, r_precision, macro, f1, max_over_many, average_precision, mean_reciprocal_rank
+from deardr.inference.scoring import precision, recall, r_precision, macro, f1, max_over_many, average_precision, \
+    recall_corrected, precision_corrected, reciprocal_rank, average_precision_corrected
 from deardr.training.args import ModelArguments, DataTrainingArguments
 from deardr.training.comet_logging_callback import CometTrainingCallback
 from deardr.training.deardr_trainer import DearDrTrainer
@@ -116,7 +118,7 @@ def main():
         use_auth_token=True if model_args.use_auth_token else None,
     )
 
-    tok_length = len(tokenizer.vocab)
+    tok_length = tokenizer.vocab_size
 
     if data_args.max_seq_length > tokenizer.model_max_length:
         logger.warning(
@@ -195,9 +197,13 @@ def main():
             "macro_precision": macro(max_over_many(precision), actual, predicted),
             "macro_f1": macro(max_over_many(f1), actual, predicted),
             "macro_r_precision": macro(max_over_many(r_precision), actual, predicted),
-            "macro_mean_reciprocal_rank": macro(max_over_many(mean_reciprocal_rank), actual, predicted),
-            "macro_average_precision": macro(max_over_many(average_precision), actual, predicted)
+            "macro_average_precision": macro(max_over_many(average_precision), actual, predicted),
+            "macro_recall_corrected": macro(max_over_many(recall_corrected), actual, predicted),
+            "macro_precision_corrected": macro(max_over_many(precision_corrected), actual, predicted),
+            "macro_reciprocal_rank": macro(max_over_many(reciprocal_rank), actual, predicted),
+            "macro_average_precision_corrected": macro(max_over_many(average_precision_corrected), actual, predicted)
         }
+
 
     logging_callback = CometTrainingCallback(experiment)
     trainer_cls = DearDrTrainer # Maybe do multiple beams with DearDrPredictor but this is SLLOOOOWWWW
