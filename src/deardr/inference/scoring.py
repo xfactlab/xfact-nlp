@@ -52,8 +52,10 @@ def average_precision(actual, predicted):
             r.append(1)
         else:
             r.append(0)
+    print(r)
     r = np.asarray(r) != 0
     out = [precision_at_k(r, k + 1) for k in range(r.size) if r[k]]
+    print(out)
     if not out:
         return 0.
     return np.mean(out)
@@ -64,8 +66,11 @@ def average_precision_corrected(actual, predicted):
     https://gist.github.com/bwhite/3726239
     """
     r = []
+    print(actual, predicted)
     found = False
-    for i, p in enumerate(reversed(predicted)):
+    predicted_len = len(predicted) - 1
+    for j, _ in enumerate(predicted):
+        i = predicted_len - j
         if len(actual) > i and actual[i] == predicted[i] and not found:
             found = True
             r.insert(0, 1)
