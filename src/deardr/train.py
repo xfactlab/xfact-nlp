@@ -118,7 +118,7 @@ def main():
         use_auth_token=True if model_args.use_auth_token else None,
     )
 
-    tok_length = tokenizer.vocab_size
+    tok_length = len(tokenizer.vocab)
 
     if data_args.max_seq_length > tokenizer.model_max_length:
         logger.warning(
