@@ -5,7 +5,9 @@ class PretrainPT(Reader):
     def generate_instances(self, instance):
         a = {
             "source": instance["line"],
-            "entities": [instance["page"]]      # This is the List of entities to predict
+            "entities": [instance["page"]],
+            "instance": instance
+
         }
         a["nested_entities"] = [a["entities"]]
 
@@ -16,7 +18,8 @@ class PretrainHL(Reader):
     def generate_instances(self, instance):
         a = {
             "source": instance["line"],
-            "entities": instance.get("entities",[])
+            "entities": instance.get("entities",[]),
+            "instance": instance
         }
 
         a["nested_entities"] = [a["entities"]]
@@ -33,7 +36,8 @@ class PretrainPTHL(Reader):
     def generate_instances(self, instance):
         a = {
             "source": instance["line"],
-            "entities": [instance["page"]] + instance.get("entities",[])
+            "entities": [instance["page"]] + instance.get("entities",[]),
+            "instance": instance
         }
 
         a["nested_entities"] = [a["entities"]]

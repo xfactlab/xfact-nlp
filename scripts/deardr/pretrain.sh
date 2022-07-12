@@ -16,12 +16,12 @@ python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS \
   --project_name DEARDR-ZEROSHOT \
   --dataset_reader deardr \
   --validation_dataset_reader deardr \
-  --train_frontend_reader $reader \
-  --validation_frontend_reader fever \
+  --train_frontend_reader kilt \
+  --validation_frontend_reader kilt \
   --model_name_or_path t5-base \
   --output_dir /output \
-  --train_file ${data_root}/wiki-pretraining/shuf_10k.jsonl \
-  --validation_file ${data_root}/fever/shared_task_dev.jsonl \
+  --train_file ${data_root}/kilt/qg_10k.jsonl \
+  --validation_file ${data_root}/kilt/nq-dev-10k.jsonl \
   --prefix_path ${data_root}/prefix-tree/wikipedia-titles-structured-pt.pkl \
   --do_train \
   --do_eval \
