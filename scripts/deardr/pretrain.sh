@@ -14,7 +14,7 @@ model_name=${13}
 log_freq=50
 data_root=${DATA_ROOT:-/}
 export PYTHONPATH=src
-
+echo "val_db=${10}, train_file=${11}, val_file=${12}, model_name=${13}"
 #python src/deardr/train.py \
 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS \
   src/deardr/train.py \
@@ -35,7 +35,7 @@ python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS \
   --logging_steps $log_freq \
   --save_steps $eval_freq \
   --eval_steps $eval_freq \
-  --num_train_epochs 8 \
+  --num_train_epochs 5 \
   --save_total_limit 3 \
   --max_eval_samples 1000 \
   --load_best_model_at_end \
