@@ -27,7 +27,7 @@ python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS \
   --model_name_or_path $model_name \
   --output_dir /output \
   --train_file ${data_root}/${train_db}/${train_file} \
-  --validation_file ${data_root}/${val_db}/$val_file \
+  --validation_file ${data_root}/${val_db}/${val_file} \
   --prefix_path ${data_root}/prefix-tree/wikipedia-titles-structured-pt.pkl \
   --do_train \
   --do_eval \
