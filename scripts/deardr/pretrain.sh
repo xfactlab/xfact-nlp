@@ -13,7 +13,6 @@ val_file=${12}
 model_name=${13}
 log_freq=50
 data_root=${DATA_ROOT:-/}
-echo "${1} ${2} ${3} ${4} ${5} ${6} ${7} ${8} ${9} ${10} ${11} ${12} ${13}"
 export PYTHONPATH=src
 
 #python src/deardr/train.py \
