@@ -1,5 +1,5 @@
 NUM_GPUS=$1
-train_reader=$2
+reader=$2
 learning_rate=$3
 batch_size=$4
 steps=$5
@@ -22,7 +22,7 @@ python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS \
   --project_name DEARDR-ZEROSHOT \
   --dataset_reader deardr \
   --validation_dataset_reader deardr \
-  --train_frontend_reader $train_reader \
+  --train_frontend_reader $reader \
   --validation_frontend_reader $val_reader \
   --model_name_or_path $model_name \
   --output_dir /output \
