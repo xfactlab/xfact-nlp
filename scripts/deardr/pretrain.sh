@@ -1,10 +1,16 @@
 NUM_GPUS=$1
-reader=$2
+train_reader=$2
 learning_rate=$3
 batch_size=$4
 steps=$5
 eval_freq=$6
 scheduler=$7
+val_reader=$8
+train_db=$9
+val_db=${10}
+train_file=${11}
+val_file=${12}
+model_name=${13}
 log_freq=50
 data_root=${DATA_ROOT:-/}
 
@@ -16,12 +22,12 @@ python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS \
   --project_name DEARDR-ZEROSHOT \
   --dataset_reader deardr \
   --validation_dataset_reader deardr \
-  --train_frontend_reader $reader \
-  --validation_frontend_reader fever \
-  --model_name_or_path t5-base \
+  --train_frontend_reader $train_reader \
+  --validation_frontend_reader $val_reader \
+  --model_name_or_path $model_name \
   --output_dir /output \
-  --train_file ${data_root}/wiki-pretraining/shuf_10k.jsonl \
-  --validation_file ${data_root}/fever/shared_task_dev.jsonl \
+  --train_file ${data_root}/$train_db/$train_file \
+  --validation_file ${data_root}/$val_db/$val_file \
   --prefix_path ${data_root}/prefix-tree/wikipedia-titles-structured-pt.pkl \
   --do_train \
   --do_eval \
