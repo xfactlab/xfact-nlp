@@ -59,7 +59,7 @@ def single_document_prefix(tokenizer, path):
 
 
 def multi_document_prefix(tokenizer, path):
-    with open(path, "rb") as f:
+    with open("/Users/euiyulsong/Documents/git/deardr/data/prefix-tree/wikipedia-titles-structured-pt.pkl", "rb") as f:
         print("loading prefix decoder")
         prefix_decoder = pickle.load(f)
         print("dne")
