@@ -21,7 +21,7 @@ vessl experiment create \
   --git-ref "/root/deardr:github/j6mes-lab/deardr/${GIT_REF}" \
   --dataset "/data/:kaist-jtlab/deardr-dataset" \
   --dataset "/cache/:kaist-jtlab/cache" \
-  -h reader=$READER_TRAIN -h learning_rate=$LEARNING_RATE -h batch_size=8 -h steps=1 -h eval_freq=15 -h lr_scheduler_type=${LR_SCHEDULER} \
-  -h val_reader=fever -h train_db=wiki-pretraining -h val_db=fever -h train_file=shuf_100k.jsonl -h val_file=shared_task_dev.jsonl \
+  -h reader=$READER_TRAIN -h learning_rate=$LEARNING_RATE -h batch_size=8 -h steps=1 -h eval_freq=75 -h lr_scheduler_type=${LR_SCHEDULER} \
+  -h val_reader=fever -h train_db=wiki-pretraining -h val_db=fever -h train_file=shuf_10k.jsonl -h val_file=shared_task_dev.jsonl \
   -h model_name=t5-base \
   -h DATA_ROOT=/data -h TRANSFORMERS_CACHE=/cache/transformers -h XDG_CACHE_HOME=/cache/pytorch
