@@ -22,9 +22,10 @@ vessl experiment create \
   --dataset "/data/:kaist-jtlab/deardr-dataset" \
   --dataset "/cache/:kaist-jtlab/cache" \
   -h reader=$READER_TRAIN -h learning_rate=$LEARNING_RATE -h batch_size=8 -h steps=1 -h eval_freq=75 -h lr_scheduler_type=${LR_SCHEDULER} \
-  -h val_reader=kilt -h train_db=wiki-pretraining -h val_db=kilt -h train_file=qg_shuf_10k.jsonl -h val_file=triviaqa-dev-10k-kilt.jsonl \
+  -h val_reader=kilt -h train_db=wiki-pretraining -h val_db=kilt -h train_file=qg_filtered_10k.jsonl -h val_file=triviaqa-dev-10k-kilt.jsonl \
   -h model_name=t5-base \
   -h DATA_ROOT=/data -h TRANSFORMERS_CACHE=/cache/transformers -h XDG_CACHE_HOME=/cache/pytorch
+
 
 vessl experiment create \
   --organization "kaist-jtlab" \
@@ -38,7 +39,7 @@ vessl experiment create \
   --dataset "/data/:kaist-jtlab/deardr-dataset" \
   --dataset "/cache/:kaist-jtlab/cache" \
   -h reader=$READER_TRAIN -h learning_rate=$LEARNING_RATE -h batch_size=8 -h steps=1 -h eval_freq=7 -h lr_scheduler_type=${LR_SCHEDULER} \
-  -h val_reader=kilt -h train_db=wiki-pretraining -h val_db=kilt -h train_file=qg_shuf_10k.jsonl -h val_file=triviaqa-dev-k-kilt.jsonl \
+  -h val_reader=kilt -h train_db=wiki-pretraining -h val_db=kilt -h train_file=qg_filtered_10k.jsonl -h val_file=triviaqa-dev-k-kilt.jsonl \
   -h model_name=t5-base \
   -h DATA_ROOT=/data -h TRANSFORMERS_CACHE=/cache/transformers -h XDG_CACHE_HOME=/cache/pytorch
 
@@ -55,7 +56,7 @@ vessl experiment create \
   --dataset "/data/:kaist-jtlab/deardr-dataset" \
   --dataset "/cache/:kaist-jtlab/cache" \
   -h reader=$READER_TRAIN -h learning_rate=$LEARNING_RATE -h batch_size=8 -h steps=1 -h eval_freq=75 -h lr_scheduler_type=${LR_SCHEDULER} \
-  -h val_reader=kilt -h train_db=wiki-pretraining -h val_db=kilt -h train_file=qg_shuf_10k.jsonl -h val_file=nq-dev-kilt-10000.jsonl \
+  -h val_reader=kilt -h train_db=wiki-pretraining -h val_db=kilt -h train_file=qg_filtered_10k.jsonl -h val_file=nq-dev-kilt-10000.jsonl \
   -h model_name=t5-base \
   -h DATA_ROOT=/data -h TRANSFORMERS_CACHE=/cache/transformers -h XDG_CACHE_HOME=/cache/pytorch
 
@@ -72,7 +73,7 @@ vessl experiment create \
   --dataset "/data/:kaist-jtlab/deardr-dataset" \
   --dataset "/cache/:kaist-jtlab/cache" \
   -h reader=$READER_TRAIN -h learning_rate=$LEARNING_RATE -h batch_size=8 -h steps=1 -h eval_freq=7 -h lr_scheduler_type=${LR_SCHEDULER} \
-  -h val_reader=kilt -h train_db=wiki-pretraining -h val_db=kilt -h train_file=qg_shuf_10k.jsonl -h val_file=nq-dev-kilt-1000.jsonl \
+  -h val_reader=kilt -h train_db=wiki-pretraining -h val_db=kilt -h train_file=qg_filtered_10k.jsonl -h val_file=nq-dev-kilt-1000.jsonl \
   -h model_name=t5-base \
   -h DATA_ROOT=/data -h TRANSFORMERS_CACHE=/cache/transformers -h XDG_CACHE_HOME=/cache/pytorch
 
@@ -89,7 +90,7 @@ vessl experiment create \
   --dataset "/data/:kaist-jtlab/deardr-dataset" \
   --dataset "/cache/:kaist-jtlab/cache" \
   -h reader=$READER_TRAIN -h learning_rate=$LEARNING_RATE -h batch_size=8 -h steps=1 -h eval_freq=75 -h lr_scheduler_type=${LR_SCHEDULER} \
-  -h val_reader=kilt -h train_db=wiki-pretraining -h val_db=kilt -h train_file=qg_shuf_10k.jsonl -h val_file=hotpotqa-dev-kilt-10000.jsonl \
+  -h val_reader=kilt -h train_db=wiki-pretraining -h val_db=kilt -h train_file=qg_filtered_10k.jsonl -h val_file=hotpotqa-dev-kilt-10000.jsonl \
   -h model_name=t5-base \
   -h DATA_ROOT=/data -h TRANSFORMERS_CACHE=/cache/transformers -h XDG_CACHE_HOME=/cache/pytorch
 
@@ -106,6 +107,6 @@ vessl experiment create \
   --dataset "/data/:kaist-jtlab/deardr-dataset" \
   --dataset "/cache/:kaist-jtlab/cache" \
   -h reader=$READER_TRAIN -h learning_rate=$LEARNING_RATE -h batch_size=8 -h steps=1 -h eval_freq=7 -h lr_scheduler_type=${LR_SCHEDULER} \
-  -h val_reader=kilt -h train_db=wiki-pretraining -h val_db=kilt -h train_file=qg_shuf_10k.jsonl -h val_file=hotpotqa-dev-kilt-1000.jsonl \
+  -h val_reader=kilt -h train_db=wiki-pretraining -h val_db=kilt -h train_file=qg_filtered_10k.jsonl -h val_file=hotpotqa-dev-kilt-1000.jsonl \
   -h model_name=t5-base \
   -h DATA_ROOT=/data -h TRANSFORMERS_CACHE=/cache/transformers -h XDG_CACHE_HOME=/cache/pytorch
