@@ -38,7 +38,7 @@ def main():
         # let's parse it to get our arguments.
         model_args, data_args, training_args = parser.parse_json_file(json_file=os.path.abspath(sys.argv[1]))
     else:
-        model_args, data_args, training_args = parser.parse_args_into_dataclasses()
+        model_args, data_args, training_args, remaining_args = parser.parse_args_into_dataclasses(return_remaining_strings=True)
 
     # Setup logging
     logging.basicConfig(
@@ -220,6 +220,7 @@ def main():
         data_collator=data_collator,
         compute_metrics=compute_metrics,
         post_process_function=post_process,
+        train_beam=remaining_args[1],
         prefix_decode=prefix_decode(tokenizer, model_args.prefix_path),
         callbacks=[logging_callback]
     )
@@ -252,7 +253,7 @@ def main():
         logger.info("*** Evaluate ***")
         metrics = trainer.evaluate(
             max_length=data_args.max_target_length,
-            num_beams=3 # This is fast enough to estimate the R-precision which typically requires less than 2 elements but not perfect
+            num_beams=remaining_args[3] # This is fast enough to estimate the R-precision which typically requires less than 2 elements but not perfect
         )
 
         max_eval_samples = data_args.max_eval_samples if data_args.max_eval_samples is not None else len(loaded_datasets['validation'])

@@ -10,6 +10,8 @@ NUM_GPUS=${1:-1}
 LEARNING_RATE=${2}
 READER_TRAIN=${3}
 LR_SCHEDULER=${4}
+SEED=${5}
+
 vessl experiment create \
   --organization "kaist-jtlab" \
   --project "deardr" \
@@ -23,5 +25,5 @@ vessl experiment create \
   --dataset "/cache/:kaist-jtlab/cache" \
   -h reader=$READER_TRAIN -h learning_rate=$LEARNING_RATE -h batch_size=8 -h steps=1 -h eval_freq=75 -h lr_scheduler_type=${LR_SCHEDULER} \
   -h val_reader=hover -h train_db=wiki-pretraining -h val_db=hover -h train_file=shuf_10k.jsonl -h val_file=hover-dev.json \
-  -h model_name=t5-base \
+  -h model_name=t5-base -h seed=${SEED} -h epoch=5 -h train_beam=10 -h eval_beam=10 \
   -h DATA_ROOT=/data -h TRANSFORMERS_CACHE=/cache/transformers -h XDG_CACHE_HOME=/cache/pytorch

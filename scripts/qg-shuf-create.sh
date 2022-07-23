@@ -10,6 +10,8 @@ NUM_GPUS=${1:-1}
 LEARNING_RATE=${2}
 READER_TRAIN=${3}
 LR_SCHEDULER=${4}
+SEED=${5}
+
 vessl experiment create \
   --organization "kaist-jtlab" \
   --project "deardr" \
@@ -23,7 +25,7 @@ vessl experiment create \
   --dataset "/cache/:kaist-jtlab/cache" \
   -h reader=$READER_TRAIN -h learning_rate=$LEARNING_RATE -h batch_size=8 -h steps=1 -h eval_freq=75 -h lr_scheduler_type=${LR_SCHEDULER} \
   -h val_reader=kilt -h train_db=wiki-pretraining -h val_db=kilt -h train_file=qg_shuf_10k.jsonl -h val_file=triviaqa-dev-10k-kilt.jsonl \
-  -h model_name=t5-base \
+  -h model_name=t5-base -h seed=${SEED} -h epoch=5 -h train_beam=10 -h eval_beam=10 \
   -h DATA_ROOT=/data -h TRANSFORMERS_CACHE=/cache/transformers -h XDG_CACHE_HOME=/cache/pytorch
 
 
@@ -38,9 +40,9 @@ vessl experiment create \
   --git-ref "/root/deardr:github/j6mes-lab/deardr/${GIT_REF}" \
   --dataset "/data/:kaist-jtlab/deardr-dataset" \
   --dataset "/cache/:kaist-jtlab/cache" \
-  -h reader=$READER_TRAIN -h learning_rate=$LEARNING_RATE -h batch_size=8 -h steps=1 -h eval_freq=7 -h lr_scheduler_type=${LR_SCHEDULER} \
+  -h reader=$READER_TRAIN -h learning_rate=$LEARNING_RATE -h batch_size=8 -h steps=1 -h eval_freq=75 -h lr_scheduler_type=${LR_SCHEDULER} \
   -h val_reader=kilt -h train_db=wiki-pretraining -h val_db=kilt -h train_file=qg_shuf_10k.jsonl -h val_file=triviaqa-dev-k-kilt.jsonl \
-  -h model_name=t5-base \
+  -h model_name=t5-base -h seed=${SEED} -h epoch=5 -h train_beam=10 -h eval_beam=10 \
   -h DATA_ROOT=/data -h TRANSFORMERS_CACHE=/cache/transformers -h XDG_CACHE_HOME=/cache/pytorch
 
 
@@ -57,7 +59,7 @@ vessl experiment create \
   --dataset "/cache/:kaist-jtlab/cache" \
   -h reader=$READER_TRAIN -h learning_rate=$LEARNING_RATE -h batch_size=8 -h steps=1 -h eval_freq=75 -h lr_scheduler_type=${LR_SCHEDULER} \
   -h val_reader=kilt -h train_db=wiki-pretraining -h val_db=kilt -h train_file=qg_shuf_10k.jsonl -h val_file=nq-dev-kilt-10000.jsonl \
-  -h model_name=t5-base \
+  -h model_name=t5-base -h seed=${SEED} -h epoch=5 -h train_beam=10 -h eval_beam=10 \
   -h DATA_ROOT=/data -h TRANSFORMERS_CACHE=/cache/transformers -h XDG_CACHE_HOME=/cache/pytorch
 
 
@@ -72,9 +74,9 @@ vessl experiment create \
   --git-ref "/root/deardr:github/j6mes-lab/deardr/${GIT_REF}" \
   --dataset "/data/:kaist-jtlab/deardr-dataset" \
   --dataset "/cache/:kaist-jtlab/cache" \
-  -h reader=$READER_TRAIN -h learning_rate=$LEARNING_RATE -h batch_size=8 -h steps=1 -h eval_freq=7 -h lr_scheduler_type=${LR_SCHEDULER} \
+  -h reader=$READER_TRAIN -h learning_rate=$LEARNING_RATE -h batch_size=8 -h steps=1 -h eval_freq=75 -h lr_scheduler_type=${LR_SCHEDULER} \
   -h val_reader=kilt -h train_db=wiki-pretraining -h val_db=kilt -h train_file=qg_shuf_10k.jsonl -h val_file=nq-dev-kilt-1000.jsonl \
-  -h model_name=t5-base \
+  -h model_name=t5-base -h seed=${SEED} -h epoch=5 -h train_beam=10 -h eval_beam=10 \
   -h DATA_ROOT=/data -h TRANSFORMERS_CACHE=/cache/transformers -h XDG_CACHE_HOME=/cache/pytorch
 
 
@@ -91,7 +93,7 @@ vessl experiment create \
   --dataset "/cache/:kaist-jtlab/cache" \
   -h reader=$READER_TRAIN -h learning_rate=$LEARNING_RATE -h batch_size=8 -h steps=1 -h eval_freq=75 -h lr_scheduler_type=${LR_SCHEDULER} \
   -h val_reader=kilt -h train_db=wiki-pretraining -h val_db=kilt -h train_file=qg_shuf_10k.jsonl -h val_file=hotpotqa-dev-kilt-10000.jsonl \
-  -h model_name=t5-base \
+  -h model_name=t5-base -h seed=${SEED} -h epoch=5 -h train_beam=10 -h eval_beam=10 \
   -h DATA_ROOT=/data -h TRANSFORMERS_CACHE=/cache/transformers -h XDG_CACHE_HOME=/cache/pytorch
 
 
@@ -106,7 +108,7 @@ vessl experiment create \
   --git-ref "/root/deardr:github/j6mes-lab/deardr/${GIT_REF}" \
   --dataset "/data/:kaist-jtlab/deardr-dataset" \
   --dataset "/cache/:kaist-jtlab/cache" \
-  -h reader=$READER_TRAIN -h learning_rate=$LEARNING_RATE -h batch_size=8 -h steps=1 -h eval_freq=7 -h lr_scheduler_type=${LR_SCHEDULER} \
+  -h reader=$READER_TRAIN -h learning_rate=$LEARNING_RATE -h batch_size=8 -h steps=1 -h eval_freq=75 -h lr_scheduler_type=${LR_SCHEDULER} \
   -h val_reader=kilt -h train_db=wiki-pretraining -h val_db=kilt -h train_file=qg_shuf_10k.jsonl -h val_file=hotpotqa-dev-kilt-1000.jsonl \
-  -h model_name=t5-base \
+  -h model_name=t5-base -h seed=${SEED} -h epoch=5 -h train_beam=10 -h eval_beam=10 \
   -h DATA_ROOT=/data -h TRANSFORMERS_CACHE=/cache/transformers -h XDG_CACHE_HOME=/cache/pytorch

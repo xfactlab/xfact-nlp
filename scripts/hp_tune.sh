@@ -6,7 +6,7 @@ do
   do
     for k in "cosine_with_restarts" "polynomial" "constant" "constant_with_warmup" # "constant" "linear" #
     do
-      bash vessl-create.sh $gpu $i $j $k
+      bash vessl-create.sh $gpu $i $j $k 0
     done
   done
 done
