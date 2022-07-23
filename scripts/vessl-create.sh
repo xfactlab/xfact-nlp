@@ -24,7 +24,7 @@ vessl experiment create \
   --dataset "/cache/:kaist-jtlab/cache" \
   -h reader=$READER_TRAIN -h learning_rate=$LEARNING_RATE -h batch_size=8 -h steps=1 -h eval_freq=781 -h lr_scheduler_type=${LR_SCHEDULER} \
   -h val_reader=fever -h SEED=1 -h train_db=wiki-pretraining -h val_db=fever -h train_file=shuf_500k.jsonl -h val_file=shared_task_dev.jsonl \
-  -h model_name=t5-base -h seed=${SEED} -h epoch=1 -h train_beam=10 -h eval_beam = 10 \
+  -h model_name=t5-base -h seed=${SEED} -h epoch=1 -h train_beam=10 -h eval_beam=10 \
   -h DATA_ROOT=/data -h TRANSFORMERS_CACHE=/cache/transformers -h XDG_CACHE_HOME=/cache/pytorch
 
 vessl experiment create \
@@ -40,7 +40,7 @@ vessl experiment create \
   --dataset "/cache/:kaist-jtlab/cache" \
   -h reader=$READER_TRAIN -h learning_rate=$LEARNING_RATE -h batch_size=8 -h steps=1 -h eval_freq=468 -h lr_scheduler_type=${LR_SCHEDULER} \
   -h val_reader=fever -h SEED=1 -h train_db=wiki-pretraining -h val_db=fever -h train_file=shuf_100k.jsonl -h val_file=shared_task_dev.jsonl \
-  -h model_name=t5-base -h seed=${SEED} -h epoch=3 -h train_beam=10 -h eval_beam = 10 \
+  -h model_name=t5-base -h seed=${SEED} -h epoch=3 -h train_beam=10 -h eval_beam=10 \
   -h DATA_ROOT=/data -h TRANSFORMERS_CACHE=/cache/transformers -h XDG_CACHE_HOME=/cache/pytorch
 
 vessl experiment create \
@@ -56,5 +56,5 @@ vessl experiment create \
   --dataset "/cache/:kaist-jtlab/cache" \
   -h reader=$READER_TRAIN -h learning_rate=$LEARNING_RATE -h batch_size=8 -h steps=1 -h eval_freq=78 -h lr_scheduler_type=${LR_SCHEDULER} \
   -h val_reader=fever -h SEED=1 -h train_db=wiki-pretraining -h val_db=fever -h train_file=shuf_10k.jsonl -h val_file=shared_task_dev.jsonl \
-  -h model_name=t5-base -h seed=${SEED} -h epoch=5 -h train_beam=10 -h eval_beam = 10 \
+  -h model_name=t5-base -h seed=${SEED} -h epoch=5 -h train_beam=10 -h eval_beam=10 \
   -h DATA_ROOT=/data -h TRANSFORMERS_CACHE=/cache/transformers -h XDG_CACHE_HOME=/cache/pytorch
