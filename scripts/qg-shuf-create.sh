@@ -18,7 +18,7 @@ vessl experiment create \
   --image-url "quay.io/vessl-ai/kernels:ngc.pytorch.22.04-py3" \
   --cluster "cluster-2080" \
   --resource "gpu-${NUM_GPUS}" \
-  --command "bash -x scripts/install.sh && bash -x scripts/deardr/pretrain.sh ${NUM_GPUS} \$reader \$learning_rate \$batch_size \$steps \$eval_freq \$lr_scheduler_type \$val_reader \$train_db \$val_db \$train_file \$val_file \$model_name" \
+  --command "bash -x scripts/install.sh && bash -x scripts/deardr/pretrain.sh ${NUM_GPUS} \$reader \$learning_rate \$batch_size \$steps \$eval_freq \$lr_scheduler_type \$val_reader \$train_db \$val_db \$train_file \$val_file \$model_name \$seed \$epoch \$train_beam \$eval_beam" \
   --working-dir /root/deardr --root-volume-size "100Gi" --output-dir "/output/" \
   --git-ref "/root/deardr:github/j6mes-lab/deardr/${GIT_REF}" \
   --dataset "/data/:kaist-jtlab/deardr-dataset" \
