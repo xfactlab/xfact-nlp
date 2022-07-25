@@ -8,9 +8,10 @@ import vessl
 from transformers import (
     AutoConfig,
     AutoTokenizer,
+    BartTokenizer,
     HfArgumentParser,
     TrainingArguments,
-    set_seed, T5ForConditionalGeneration,
+    set_seed, T5ForConditionalGeneration,BartForConditionalGeneration
 )
 from transformers.trainer_utils import get_last_checkpoint, EvalLoopOutput
 from transformers.utils import check_min_version
@@ -19,7 +20,8 @@ from deardr.dataset import DearDrCommonDataset, dataset_types
 from deardr.frontend import frontend_types, PretrainPT
 from deardr.inference.post_processing import post_process
 from deardr.inference.prefix_decoder import single_document_prefix, multi_document_prefix
-from deardr.inference.scoring import precision, recall, r_precision, macro, f1, max_over_many
+from deardr.inference.scoring import precision, recall, r_precision, macro, f1, max_over_many, average_precision, \
+    recall_corrected, precision_corrected, reciprocal_rank, average_precision_corrected
 from deardr.training.args import ModelArguments, DataTrainingArguments
 from deardr.training.comet_logging_callback import CometTrainingCallback
 from deardr.training.deardr_trainer import DearDrTrainer
@@ -36,7 +38,7 @@ def main():
         # let's parse it to get our arguments.
         model_args, data_args, training_args = parser.parse_json_file(json_file=os.path.abspath(sys.argv[1]))
     else:
-        model_args, data_args, training_args = parser.parse_args_into_dataclasses()
+        model_args, data_args, training_args, remaining_args = parser.parse_args_into_dataclasses(return_remaining_strings=True)
 
     # Setup logging
     logging.basicConfig(
@@ -194,8 +196,14 @@ def main():
             "macro_recall": macro(max_over_many(recall), actual, predicted),
             "macro_precision": macro(max_over_many(precision), actual, predicted),
             "macro_f1": macro(max_over_many(f1), actual, predicted),
-            "macro_r_precision": macro(max_over_many(r_precision), actual, predicted)
+            "macro_r_precision": macro(max_over_many(r_precision), actual, predicted),
+            "macro_average_precision": macro(max_over_many(average_precision), actual, predicted),
+            "macro_recall_corrected": macro(max_over_many(recall_corrected), actual, predicted),
+            "macro_precision_corrected": macro(max_over_many(precision_corrected), actual, predicted),
+            "macro_reciprocal_rank": macro(max_over_many(reciprocal_rank), actual, predicted),
+            "macro_average_precision_corrected": macro(max_over_many(average_precision_corrected), actual, predicted)
         }
+
 
     logging_callback = CometTrainingCallback(experiment)
     trainer_cls = DearDrTrainer # Maybe do multiple beams with DearDrPredictor but this is SLLOOOOWWWW
@@ -212,6 +220,7 @@ def main():
         data_collator=data_collator,
         compute_metrics=compute_metrics,
         post_process_function=post_process,
+        train_beam=int(remaining_args[1]),
         prefix_decode=prefix_decode(tokenizer, model_args.prefix_path),
         callbacks=[logging_callback]
     )
@@ -244,7 +253,7 @@ def main():
         logger.info("*** Evaluate ***")
         metrics = trainer.evaluate(
             max_length=data_args.max_target_length,
-            num_beams=3 # This is fast enough to estimate the R-precision which typically requires less than 2 elements but not perfect
+            num_beams=int(remaining_args[3]) # This is fast enough to estimate the R-precision which typically requires less than 2 elements but not perfect
         )
 
         max_eval_samples = data_args.max_eval_samples if data_args.max_eval_samples is not None else len(loaded_datasets['validation'])

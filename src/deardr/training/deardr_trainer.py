@@ -14,13 +14,13 @@ if is_torch_tpu_available():
 
 
 class DearDrTrainer(Seq2SeqTrainer):
-    def __init__(self, *args, generation_max_length=64, prefix_decode=None, eval_examples=None, post_process_function=None, **kwargs):
+    def __init__(self, *args, generation_max_length=64, prefix_decode=None, eval_examples=None, post_process_function=None, train_beam=10, **kwargs):
         super().__init__(*args, **kwargs)
         self.eval_examples = eval_examples
         self.post_process_function = post_process_function
         self.args.predict_with_generate = True
         self.args.generation_max_length = generation_max_length
-        self.args.generation_num_beams = 1
+        self.args.generation_num_beams = train_beam
         self.prefix_decode = prefix_decode
 
     def prediction_step(
