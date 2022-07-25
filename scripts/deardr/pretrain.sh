@@ -20,8 +20,8 @@ python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS \
   --validation_frontend_reader fever \
   --model_name_or_path t5-base \
   --output_dir /output \
-  --train_file ${data_root}/wiki-pretraining/shuf_10k.jsonl \
-  --validation_file ${data_root}/fever/shared_task_dev.jsonl \
+  --train_file ${data_root}/wiki-pretraining/shuf_qg_10k.jsonl \
+  --validation_file ${data_root}/kilt/concat-qa-1k.jsonl \
   --prefix_path ${data_root}/prefix-tree/wikipedia-titles-structured-pt.pkl \
   --do_train \
   --do_eval \
