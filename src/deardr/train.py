@@ -11,7 +11,7 @@ from transformers import (
     BartTokenizer,
     HfArgumentParser,
     TrainingArguments,
-    set_seed, T5ForConditionalGeneration,BartForConditionalGeneration
+    set_seed, T5ForConditionalGeneration, BartForConditionalGeneration, AutoModelForSeq2SeqLM
 )
 from transformers.trainer_utils import get_last_checkpoint, EvalLoopOutput
 from transformers.utils import check_min_version
@@ -165,7 +165,7 @@ def main():
         config.dropout_rate = model_args.dropout_rate
 
 
-    model = T5ForConditionalGeneration.from_pretrained(
+    model = AutoModelForSeq2SeqLM.from_pretrained(
         model_args.model_name_or_path,
         from_tf=bool(".ckpt" in model_args.model_name_or_path),
         config=config,
@@ -186,9 +186,9 @@ def main():
     if training_args.do_eval:
         if "validation" not in loaded_datasets:
             raise ValueError("--do_eval requires a validation dataset")
-
-
-    data_collator = lambda batch: DearDrCommonDataset.collate_fn(batch, tokenizer.pad_token_id)
+    #
+    #
+    data_collator = lambda batch: DearDrCommonDataset.collate_fn(model, batch, tokenizer.pad_token_id, data_args.ignore_pad_token_for_loss)
 
     def compute_metrics(actual, predicted, **kwargs):
 
@@ -220,7 +220,7 @@ def main():
         data_collator=data_collator,
         compute_metrics=compute_metrics,
         post_process_function=post_process,
-        train_beam=int(remaining_args[1]),
+        train_beam=data_args.train_beam,
         prefix_decode=prefix_decode(tokenizer, model_args.prefix_path),
         callbacks=[logging_callback]
     )
@@ -253,7 +253,7 @@ def main():
         logger.info("*** Evaluate ***")
         metrics = trainer.evaluate(
             max_length=data_args.max_target_length,
-            num_beams=int(remaining_args[3]) # This is fast enough to estimate the R-precision which typically requires less than 2 elements but not perfect
+            num_beams=data_args.eval_beam # This is fast enough to estimate the R-precision which typically requires less than 2 elements but not perfect
         )
 
         max_eval_samples = data_args.max_eval_samples if data_args.max_eval_samples is not None else len(loaded_datasets['validation'])

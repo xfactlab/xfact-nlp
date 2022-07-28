@@ -1,15 +1,12 @@
 import torch
-from tokenizers.tokenizers import Tokenizer
 from torch.utils.data import Dataset
 from tqdm import tqdm
-from typing import Dict, List
+from typing import Dict
 from pathlib import Path
-
-from deardr.data_utils import encode_line, recursive_clean, trim_batch, SortishSampler
+from deardr.data_utils import encode_line, trim_batch, SortishSampler
 
 
 class PageTitlePredictionDataset(Dataset):
-
     sep_token = "<sep />"
 
     def __init__(
@@ -114,7 +111,7 @@ class PageTitlePredictionDataset(Dataset):
         return source_ids, source_mask, y
 
     @staticmethod
-    def collate_fn(batch,pad_token_id) -> Dict[str, torch.Tensor]:
+    def collate_fn(model, batch,pad_token_id, ignore_pad_token_for_loss=True) -> Dict[str, torch.Tensor]:
         input_ids = torch.stack([x["input_ids"] for x in batch])
         masks = torch.stack([x["attention_mask"] for x in batch])
 
@@ -130,8 +127,18 @@ class PageTitlePredictionDataset(Dataset):
 
         if "decoder_input_ids" in batch[0]:
             target_ids = torch.stack([x["decoder_input_ids"] for x in batch])
-            y = trim_batch(target_ids, pad_token_id)
+            y = trim_batch(target_ids, -100 if ignore_pad_token_for_loss else pad_token_id)
             ret_batch["labels"] = y
+
+            # prepare decoder_input_ids
+            if (
+                    ret_batch['labels'] is not None
+                    and model is not None
+                    and hasattr(model, "prepare_decoder_input_ids_from_labels")
+            ):
+                decoder_input_ids = model.prepare_decoder_input_ids_from_labels(labels=ret_batch["labels"])
+                ret_batch["decoder_input_ids"] = decoder_input_ids
+
             # ret_batch["decoder_input_ids"] = y
 
         return ret_batch

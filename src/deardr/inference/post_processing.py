@@ -53,6 +53,7 @@ def post_process(examples, features, predictions, trainer):
     predicted = [
         [r.strip() for r in
          p.
+             replace(features.tokenizer.bos_token or "", "").
              replace(features.tokenizer.pad_token, "").
              replace(features.tokenizer.unk_token, "").
              replace(features.tokenizer.eos_token, "").
@@ -62,6 +63,7 @@ def post_process(examples, features, predictions, trainer):
 
     actual = [
         [r.strip() for r in p.
+            replace(features.tokenizer.bos_token or "", "").
             replace(features.tokenizer.pad_token, "").
             replace(features.tokenizer.unk_token, "").
             replace(features.tokenizer.eos_token, "").
