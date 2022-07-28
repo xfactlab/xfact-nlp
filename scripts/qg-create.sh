@@ -11,7 +11,7 @@ LEARNING_RATE=${2}
 READER_TRAIN=${3}
 LR_SCHEDULER=${4}
 SEED=${5}
-
+# Name of the original files: triviaqa-dev-kilt.jsonl, hotpotqa-dev-kilt.jsonl, nq-dev-kilt.jsonl, > concat-dev-kilt.json
 vessl experiment create \
   --organization "kaist-jtlab" \
   --project "deardr" \
@@ -27,7 +27,6 @@ vessl experiment create \
   -h val_reader=kilt -h train_db=wiki-pretraining -h val_db=kilt -h train_file=qg_filtered_10k.jsonl -h val_file=triviaqa-dev-10k-kilt.jsonl \
   -h model_name=t5-base -h seed=${SEED} -h epoch=5 -h train_beam=10 -h eval_beam=10 \
   -h DATA_ROOT=/data -h TRANSFORMERS_CACHE=/cache/transformers -h XDG_CACHE_HOME=/cache/pytorch
-
 
 vessl experiment create \
   --organization "kaist-jtlab" \
