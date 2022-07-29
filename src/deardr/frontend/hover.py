@@ -14,6 +14,7 @@ def get_pages(e):
 
 class HOVERPageLevelReader(Reader):
     def enumerate(self, file):
+
         json_loaded = json.load(file)
 
         for idx, instance in enumerate(json_loaded):

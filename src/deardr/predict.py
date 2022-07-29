@@ -6,7 +6,7 @@ from collections import OrderedDict
 from operator import itemgetter
 
 import transformers
-from datasets import tqdm
+from tqdm import tqdm
 
 from transformers import (
     AutoConfig,

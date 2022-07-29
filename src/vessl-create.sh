@@ -6,23 +6,22 @@ if [ "$GIT_REF" == "" ]
     GIT_REF="HEAD"
 fi
 echo "Using ${GIT_REF}"
-GPUS=${1:-1}
+NUM_GPUS=${1:-1}
 LEARNING_RATE=${2}
 READER_TRAIN=${3}
 LR_SCHEDULER=${4}
-SEED=${5}
 vessl experiment create \
   --organization "kaist-jtlab" \
   --project "deardr" \
   --image-url "quay.io/vessl-ai/kernels:ngc.pytorch.22.04-py3" \
   --cluster "cluster-2080" \
-  --resource "gpu-${GPUS}" \
-  --command "bash -x scripts/install.sh && bash -x scripts/deardr/pretrain.sh ${GPUS} \$reader \$learning_rate \$batch_size \$steps \$eval_freq \$lr_scheduler_type \$val_reader \$train_db \$val_db \$train_file \$val_file \$model_name \$seed \$epoch \$train_beam \$eval_beam" \
+  --resource "gpu-${NUM_GPUS}" \
+  --command "bash -x scripts/install.sh && bash -x scripts/deardr/pretrain.sh ${NUM_GPUS} \$reader \$learning_rate \$batch_size \$steps \$eval_freq \$lr_scheduler_type \$val_reader \$train_db \$val_db \$train_file \$val_file \$model_name" \
   --working-dir /root/deardr --root-volume-size "100Gi" --output-dir "/output/" \
   --git-ref "/root/deardr:github/j6mes-lab/deardr/${GIT_REF}" \
   --dataset "/data/:kaist-jtlab/deardr-dataset" \
   --dataset "/cache/:kaist-jtlab/cache" \
-  -h reader=$READER_TRAIN -h learning_rate=$LEARNING_RATE -h batch_size=8 -h steps=1 -h eval_freq=781 -h lr_scheduler_type=${LR_SCHEDULER} \
-  -h val_reader=fever -h SEED=1 -h train_db=wiki-pretraining -h val_db=fever -h train_file=shuf_500k.jsonl -h val_file=shared_task_dev.jsonl \
-  -h model_name=t5-base -h seed=${SEED} -h epoch=1 -h train_beam=10 -h eval_beam=10 \
+  -h reader=$READER_TRAIN -h learning_rate=$LEARNING_RATE -h batch_size=8 -h steps=1 -h eval_freq=400 -h lr_scheduler_type=${LR_SCHEDULER} \
+  -h val_reader=hover -h train_db=wiki-pretraining -h val_db=hover -h train_file=shuf_10k.jsonl -h val_file=hover-dev.json \
+  -h model_name=t5-base \
   -h DATA_ROOT=/data -h TRANSFORMERS_CACHE=/cache/transformers -h XDG_CACHE_HOME=/cache/pytorch
