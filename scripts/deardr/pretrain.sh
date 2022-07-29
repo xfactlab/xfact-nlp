@@ -11,10 +11,15 @@ val_db=${10}
 train_file=${11}
 val_file=${12}
 model_name=${13}
+seed=${14}
+epoch=${15}
+train_beam=${16}
+eval_beam=${17}
+
 log_freq=50
 data_root=${DATA_ROOT:-/}
 export PYTHONPATH=src
-echo "val_db=${10}, train_file=${11}, val_file=${12}, model_name=${13}"
+echo "val_db=${10}, train_file=${11}, val_file=${12}, model_name=${13} seed=${seed}"
 #python src/deardr/train.py \
 python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS \
   src/deardr/train.py \
@@ -35,7 +40,7 @@ python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS \
   --logging_steps $log_freq \
   --save_steps $eval_freq \
   --eval_steps $eval_freq \
-  --num_train_epochs 5 \
+  --num_train_epochs ${epoch} \
   --save_total_limit 3 \
   --max_eval_samples 1000 \
   --load_best_model_at_end \
@@ -44,5 +49,8 @@ python -m torch.distributed.launch --nproc_per_node=$NUM_GPUS \
   --learning_rate $learning_rate \
   --per_device_train_batch_size $batch_size \
   --gradient_accumulation_steps $steps \
-  --lr_scheduler_type $scheduler
+  --lr_scheduler_type $scheduler \
+  --seed $seed \
+  --train_beam $train_beam \
+  --eval_beam $eval_beam
 

@@ -155,6 +155,18 @@ class DataTrainingArguments:
             "and end predictions are not conditioned on one another."
         },
     )
+    train_beam: int = field(
+        default=1
+    )
+    eval_beam: int = field(
+        default=10
+    )
+    ignore_pad_token_for_loss: bool = field(
+        default=True,
+        metadata={
+            "help": "Whether to ignore the tokens corresponding to padded labels in the loss computation or not."
+        },
+    )
 
     def __post_init__(self):
         if (self.train_file is None
