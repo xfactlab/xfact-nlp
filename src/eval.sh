@@ -1,17 +1,17 @@
 reader=pretrain_pthl
 learning_rate=0.0005
-batch_size=8
-steps=1
+batch_size=1
+steps=8
 eval_freq=400
-scheduler=linear
-val_reader=fever
+scheduler=constant
+val_reader=kilt
 train_db=wiki-pretraining
-val_db=fever
-train_file=shuf_10k.jsonl
-val_file=shared_task_dev.jsonl
-model_name=checkpoint
+val_db=kilt
+train_file=qg_shuf_10k.jsonl
+val_file=triviaqa-dev-k-kilt.jsonl
+model_name=t5-base
 log_freq=50
-data_root=data
+data_root=/home/james/data
 export PYTHONPATH=src
 #python src/deardr/train.py \
 python src/deardr/predict.py \
