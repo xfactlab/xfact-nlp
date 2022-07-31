@@ -112,7 +112,7 @@ def main():
     if "test" not in loaded_datasets:
         raise ValueError("--do_predict requires a test dataset")
 
-    data_collator = lambda batch: PageTitlePredictionDataset.collate_fn(batch, tokenizer.pad_token_id)
+    data_collator = lambda batch: PageTitlePredictionDataset.collate_fn(model, batch, tokenizer.pad_token_id)
 
     if model_args.predict_single:
         print("Predicting single")
