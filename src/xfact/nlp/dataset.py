@@ -1,0 +1,276 @@
+import logging
+from abc import ABC
+
+import torch
+from torch.utils.data import Dataset as TorchDataset
+from tqdm import tqdm
+from typing import Dict
+from pathlib import Path
+from deardr.data_utils import encode_line, trim_batch, SortishSampler
+from xfact.registry.registrable import Registrable
+
+logger = logging.getLogger(__name__)
+
+class XFactDataset(TorchDataset, ABC, Registrable):
+    def __init__(
+            self,
+            tokenizer,
+            instance_generator,
+            max_source_length,
+            name="",
+            n_obs=None,
+            test_mode=False,
+            output_prompt="",
+            streaming=False,
+            num_instances_to_preview=5,
+            sep_token="<sep />"
+    ):
+        super().__init__()
+
+        # Default sep token. If tokenizer has a sep token, this will be ignored.
+        self.sep_token = sep_token
+
+        # If we're streaming instances from disk, then we should continuously generate instances
+        # Otherwise, load instances from an instance generator
+        self.streaming = streaming
+        if not self.streaming:
+            self.instances = list(tqdm(filter(lambda i: i is not None, instance_generator), desc=name))
+        else:
+            self.instances = filter(lambda i: i is not None, instance_generator)
+
+        # Set class specific things
+        self.max_source_length = max_source_length
+        self.tokenizer = tokenizer
+
+        # Needed for Sortish sampler
+        if n_obs is not None:
+            self.src_lens = self.src_lens[:n_obs]
+
+        # Set pad token
+        self.pad_token_id = self.tokenizer.pad_token_id
+
+        # Set sep token
+        if not self.sep_token in self.tokenizer.vocab:
+            logger.info("Tokenizer doesn't have a sep token. Create it")
+            self.tokenizer.add_tokens([self.sep_token], special_tokens=True)
+            self.tokenizer._sep_token = self.sep_token
+
+        self.sep_token_id = self.tokenizer.vocab.get(self.sep_token)
+        self.sep_token = self.tokenizer._sep_token
+        logger.info("Sep token id is ", self.sep_token_id)
+
+        # We want to preview a number of instances
+        self.num_instances_to_preview = num_instances_to_preview
+        self.blind_test_mode = test_mode
+
+    def __len__(self):
+        return len(self.instances)
+
+    def prepare_src(self, instance):
+        raise NotImplementedError()
+
+    def prepare_tgt(self, instance):
+        raise NotImplementedError()
+
+    def __getitem__(self, index) -> Dict[str, torch.Tensor]:
+        instance = self.instances[index] if not self.streaming else next(self.instances)
+        source_line = instance["source"]
+        tgt_line = instance["entities"]
+
+        source_input = self.prepare_src(instance)
+        source_inputs = encode_line(
+            self.tokenizer, source_input, self.max_source_length
+        )
+
+        source_ids = source_inputs["input_ids"].squeeze()
+        src_mask = source_inputs["attention_mask"].squeeze()
+
+        if not self.blind_test_mode:
+            target_input = self.prepare_tgt(instance)
+            target_inputs = encode_line(
+                self.tokenizer, target_input, self.max_target_length
+            )
+            target_ids = target_inputs["input_ids"].squeeze()
+
+        if self.num_instances_to_preview >=0:
+            self.has_preview -= 1
+            print(source_input)
+            print(source_ids)
+
+            if not self.blind_test_mode:
+                print(target_input)
+                print(target_ids)
+
+            print("*" * 100)
+
+        ret = {
+            "input_ids": source_ids,
+            "attention_mask": src_mask
+        }
+
+        if not self.blind_test_mode:
+            ret["decoder_input_ids"] = target_ids
+
+        return ret
+
+
+    @staticmethod
+    def get_char_lens(data_file):
+        return [len(x) for x in Path(data_file).open().readlines()]
+
+    @staticmethod
+    def trim_seq2seq_batch(batch, pad_token_id) -> tuple:
+        y = trim_batch(batch["decoder_input_ids"], pad_token_id)
+        source_ids, source_mask = trim_batch(
+            batch["input_ids"], pad_token_id, attention_mask=batch["attention_mask"]
+        )
+        return source_ids, source_mask, y
+
+    @staticmethod
+    def collate_fn(model, batch,pad_token_id, ignore_pad_token_for_loss=True) -> Dict[str, torch.Tensor]:
+        input_ids = torch.stack([x["input_ids"] for x in batch])
+        masks = torch.stack([x["attention_mask"] for x in batch])
+
+        source_ids, source_mask = trim_batch(
+            input_ids, pad_token_id, attention_mask=masks
+        )
+
+        ret_batch = {
+            "input_ids": source_ids,
+            "attention_mask": source_mask,
+        }
+
+        if "decoder_input_ids" in batch[0]:
+            target_ids = torch.stack([x["decoder_input_ids"] for x in batch])
+            y = trim_batch(target_ids, -100 if ignore_pad_token_for_loss else pad_token_id)
+            ret_batch["labels"] = y
+
+            # prepare decoder_input_ids
+            if (
+                    ret_batch['labels'] is not None
+                    and model is not None
+                    and hasattr(model, "prepare_decoder_input_ids_from_labels")
+            ):
+                decoder_input_ids = model.prepare_decoder_input_ids_from_labels(labels=ret_batch["labels"])
+                ret_batch["decoder_input_ids"] = decoder_input_ids
+
+            # ret_batch["decoder_input_ids"] = y
+
+        return ret_batch
+
+    def make_sortish_sampler(self, batch_size):
+        return SortishSampler(self.src_lens, batch_size)
+
+
+class XFactSeq2SeqDataset(XFactDataset, ABC):
+    def __init__(
+            self,
+            tokenizer,
+            instance_generator,
+            max_source_length,
+            max_target_length=32,
+            name="",
+            n_obs=None,
+            test_mode=False,
+            output_prompt="",
+            streaming=False
+    ):
+        super(XFactSeq2SeqDataset, self).__init__(tokenizer=tokenizer,
+                                                  instance_generator=instance_generator,
+                                                  max_source_length=max_source_length,
+                                                  name=name,
+                                                  n_obs=n_obs,
+                                                  test_mode=test_mode,
+                                                  output_prompt=output_prompt,
+                                                  streaming=streaming)
+        self.max_target_length = max_target_length
+
+        self.output_prompt = output_prompt
+        self.prompt_tokens = self.tokenizer(self.output_prompt)['input_ids'][:-1]
+        logger.info("Output prompt tokens are ", self.prompt_tokens)
+
+
+    @staticmethod
+    def collate_fn(model, batch,pad_token_id, ignore_pad_token_for_loss=True) -> Dict[str, torch.Tensor]:
+        input_ids = torch.stack([x["input_ids"] for x in batch])
+        masks = torch.stack([x["attention_mask"] for x in batch])
+
+        source_ids, source_mask = trim_batch(
+            input_ids, pad_token_id, attention_mask=masks
+        )
+
+        ret_batch = {
+            "input_ids": source_ids,
+            "attention_mask": source_mask,
+        }
+
+        if "decoder_input_ids" in batch[0]:
+            target_ids = torch.stack([x["decoder_input_ids"] for x in batch])
+            y = trim_batch(target_ids, -100 if ignore_pad_token_for_loss else pad_token_id)
+            ret_batch["labels"] = y
+
+            # prepare decoder_input_ids
+            if (
+                    ret_batch['labels'] is not None
+                    and model is not None
+                    and hasattr(model, "prepare_decoder_input_ids_from_labels")
+            ):
+                decoder_input_ids = model.prepare_decoder_input_ids_from_labels(labels=ret_batch["labels"])
+                ret_batch["decoder_input_ids"] = decoder_input_ids
+
+            # ret_batch["decoder_input_ids"] = y
+
+        return ret_batch
+
+
+    def __getitem__(self, index) -> Dict[str, torch.Tensor]:
+        instance = self.instances[index] if not self.streaming else next(self.instances)
+        source_line = instance["source"]
+        tgt_line = instance["entities"]
+
+        source_input = self.prepare_src(instance)
+        source_inputs = encode_line(
+            self.tokenizer, source_input, self.max_source_length
+        )
+
+        source_ids = source_inputs["input_ids"].squeeze()
+        src_mask = source_inputs["attention_mask"].squeeze()
+
+        if not self.blind_test_mode:
+            target_input = self.prepare_tgt(instance)
+            target_inputs = encode_line(
+                self.tokenizer, target_input, self.max_target_length
+            )
+            target_ids = target_inputs["input_ids"].squeeze()
+
+        if self.num_instances_to_preview >=0:
+            self.has_preview -= 1
+            print(source_input)
+            print(source_ids)
+
+            if not self.blind_test_mode:
+                print(target_input)
+                print(target_ids)
+
+            print("*" * 100)
+
+        ret = {
+            "input_ids": source_ids,
+            "attention_mask": src_mask
+        }
+
+        if not self.blind_test_mode:
+            ret["decoder_input_ids"] = target_ids
+
+        return ret
+
+
+class XFactTaggingDataset(XFactDataset):
+    pass
+
+
+class XFactClassificationDataset(XFactDataset):
+    pass
+
+
+
