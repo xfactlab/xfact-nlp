@@ -11,7 +11,7 @@ from xfact.registry.registrable import Registrable
 
 logger = logging.getLogger(__name__)
 
-class XFactDataset(TorchDataset, ABC, Registrable):
+class XFactDataset(TorchDataset, Registrable, ABC):
     def __init__(
             self,
             tokenizer,
@@ -63,6 +63,8 @@ class XFactDataset(TorchDataset, ABC, Registrable):
         self.num_instances_to_preview = num_instances_to_preview
         self.blind_test_mode = test_mode
 
+        self.has_preview = num_instances_to_preview
+
     def __len__(self):
         return len(self.instances)
 
@@ -74,8 +76,6 @@ class XFactDataset(TorchDataset, ABC, Registrable):
 
     def __getitem__(self, index) -> Dict[str, torch.Tensor]:
         instance = self.instances[index] if not self.streaming else next(self.instances)
-        source_line = instance["source"]
-        tgt_line = instance["entities"]
 
         source_input = self.prepare_src(instance)
         source_inputs = encode_line(
@@ -243,7 +243,7 @@ class XFactSeq2SeqDataset(XFactDataset, ABC):
             )
             target_ids = target_inputs["input_ids"].squeeze()
 
-        if self.num_instances_to_preview >=0:
+        if self.has_preview >=0:
             self.has_preview -= 1
             print(source_input)
             print(source_ids)

@@ -53,18 +53,18 @@ class DataTrainingArguments:
     Arguments pertaining to what data we are going to input our model for training and eval.
     """
 
-    dataset_reader: str = field(
+    dataset: str = field(
         metadata={"help": "Dataset dataset"}
     )
-    validation_dataset_reader: Optional[str] = field(
+    validation_dataset: Optional[str] = field(
         default=None,
         metadata={"help": "Dataset dataset for validation set"}
     )
-    train_frontend_reader: Optional[str] = field(
+    reader: Optional[str] = field(
         default="base",
         metadata={"help": "Dataset dataset"}
     )
-    validation_frontend_reader: Optional[str] = field(
+    validation_reader: Optional[str] = field(
         default=None,
         metadata={"help": "Dataset dataset"}
     )

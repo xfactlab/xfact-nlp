@@ -27,18 +27,24 @@ class Registrable(ABC):
         return register_cls
 
     @classmethod
-    def resolve(cls, name:str):
+    def _resolve(cls, name:str):
         registry = Registrable.class_registry[cls]
         if name in registry:
-            subclass, constructor = registry[name]
-            return subclass, constructor
+            subclass, args = registry[name]
+            return subclass, args
         raise ValueError(f"Class '{name}' was not found in registry for {cls}")
+
+
+    @classmethod
+    def resolve(cls, name:str):
+        clazz, _ = cls._resolve(name)
+        return clazz
 
     @classmethod
     def get_constructor(cls, name :str):
         logger.debug(f"Getting constructor for {name}")
 
-        subclass, args = cls.resolve(name)
+        subclass, args = cls._resolve(name)
 
         if not 'constructor' in args:
             logger.debug(f"No override function provided, using __init__")

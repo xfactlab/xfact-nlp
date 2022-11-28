@@ -1,7 +1,7 @@
-from xfact.nlp.dataset import XFactSeq2SeqDataset
+from xfact.nlp.dataset import XFactSeq2SeqDataset, XFactDataset
 
 
-@XFactSeq2SeqDataset.register("deardr")
+@XFactDataset.register("deardr")
 class DearDrCommonDataset(XFactSeq2SeqDataset):
     def prepare_src(self, instance):
         return "predict document titles: " + instance["source"]

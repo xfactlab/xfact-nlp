@@ -3,7 +3,6 @@ import os
 import sys
 from operator import itemgetter
 import transformers
-import vessl
 
 from transformers import (
     AutoConfig,
@@ -16,7 +15,6 @@ from transformers import (
 from transformers.trainer_utils import get_last_checkpoint, EvalLoopOutput
 from transformers.utils import check_min_version
 
-from deardr.dataset import DearDrCommonDataset, dataset_types
 from deardr.frontend import frontend_types, PretrainPT
 from deardr.inference.post_processing import post_process
 from deardr.inference.prefix_decoder import single_document_prefix, multi_document_prefix
@@ -25,6 +23,8 @@ from deardr.inference.scoring import precision, recall, r_precision, macro, f1, 
 from deardr.training.args import ModelArguments, DataTrainingArguments
 from deardr.training.comet_logging_callback import CometTrainingCallback
 from deardr.training.deardr_trainer import DearDrTrainer
+from xfact.nlp.dataset import XFactDataset
+from xfact.nlp.reader import Reader
 
 check_min_version("4.16.0")
 logger = logging.getLogger(__name__)
@@ -32,7 +32,6 @@ logger = logging.getLogger(__name__)
 
 
 def main():
-    vessl.init()
     parser = HfArgumentParser((ModelArguments, DataTrainingArguments, TrainingArguments))
     if len(sys.argv) == 2 and sys.argv[1].endswith(".json"):
         # If we pass only one argument to the script and it's the path to a json file,
@@ -69,7 +68,7 @@ def main():
         #     project_name=data_args.project_name if data_args.project_name is not None else f"atm_{data_args.dataset_reader}",
         #     experiment_key=data_args.experiment_name if data_args.experiment_name is not None else None
         # )
-        experiment = vessl
+        experiment = None
         # experiment.log_parameters(training_args.to_dict())
     else:
         experiment = None
@@ -104,7 +103,6 @@ def main():
     # Distributed training:
     # The .from_pretrained methods guarantee that only one local process can concurrently
     # download model & vocab.
-
     config = AutoConfig.from_pretrained(
         model_args.config_name if model_args.config_name else model_args.model_name_or_path,
         cache_dir=model_args.cache_dir,
@@ -128,8 +126,8 @@ def main():
         )
     max_seq_length = min(data_args.max_seq_length, tokenizer.model_max_length)
 
-    dataset_cls = dataset_types[data_args.dataset_reader]
-    reader = frontend_types[data_args.train_frontend_reader]()
+    dataset_cls = XFactDataset.resolve(data_args.dataset)
+    reader = Reader.init(data_args.reader)
 
     dataset_classes = {
         "train": dataset_cls
@@ -139,12 +137,11 @@ def main():
         "train": reader
     }
 
-    if data_args.validation_dataset_reader is not None:
-        validation_frontend = frontend_types[data_args.validation_frontend_reader]
-        validation_reader_cls = dataset_types[data_args.validation_dataset_reader]
-        validation_reader = validation_frontend()
+    if data_args.validation_dataset is not None:
+        validation_reader = Reader.init(data_args.validation_reader)
+        validation_dataset_cls = XFactDataset.resolve(data_args.validation_dataset)
 
-        dataset_classes["validation"] = validation_reader_cls
+        dataset_classes["validation"] = validation_dataset_cls
         readers["validation"] = validation_reader
     else:
         dataset_classes["validation"] = dataset_classes["train"]
@@ -189,7 +186,7 @@ def main():
             raise ValueError("--do_eval requires a validation dataset")
     #
     #
-    data_collator = lambda batch: DearDrCommonDataset.collate_fn(model, batch, tokenizer.pad_token_id, data_args.ignore_pad_token_for_loss)
+    data_collator = lambda batch: dataset_cls.collate_fn(model, batch, tokenizer.pad_token_id, data_args.ignore_pad_token_for_loss)
 
     def compute_metrics(actual, predicted, **kwargs):
 
@@ -222,7 +219,7 @@ def main():
         compute_metrics=compute_metrics,
         post_process_function=post_process,
         train_beam=data_args.train_beam,
-        prefix_decode=prefix_decode(tokenizer, model_args.prefix_path),
+        # prefix_decode=prefix_decode(tokenizer, model_args.prefix_path),
         callbacks=[logging_callback]
     )
 
