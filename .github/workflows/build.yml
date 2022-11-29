@@ -33,3 +33,4 @@ jobs:
       if: startsWith(github.ref, 'refs/heads/release-v')
       with:
         password: ${{ secrets.PYPI_API_TOKEN }}
+        verbose: true
