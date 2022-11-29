@@ -10,7 +10,7 @@ depends = [req.replace("git+git://", "git+http://") for req in reqs if req.start
 
 
 setup(
-    name='xnlp',
+    name='xfact',
     version='0.0.0',
     author='James Thorne',
     author_email='james@jamesthorne.com',
