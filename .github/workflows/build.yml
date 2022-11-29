@@ -19,13 +19,13 @@ jobs:
         python-version: 3.8
     - name: Set Version
       run: |
-        export VERSION_NUMBER=$(echo ${{ env.GITHUB_HEAD_REF }} | cut -d'v' -f 2).${{ env.GITHUB_RUN_NUMBER}}
+        export VERSION_NUMBER=$(echo ${GITHUB_HEAD_REF} | cut -d'v' -f 2).${GITHUB_RUN_NUMBER}
         sed -i -e 's/0\.0\.0/'"$VERSION_NUMBER"'/g' setup.py
         echo "VERSION " $VERSION_NUMBER
     - name: Install
       run: |
         python setup.py install
-    - name: Install
+    - name: Create egg
       run: |
         python setup.py sdist
     - name: Release
