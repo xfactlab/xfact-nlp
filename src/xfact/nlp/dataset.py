@@ -31,21 +31,14 @@ class XFactDataset(TorchDataset, Registrable, ABC):
         # Default sep token. If tokenizer has a sep token, this will be ignored.
         self.sep_token = sep_token
 
-        # If we're streaming instances from disk, then we should continuously generate instances
-        # Otherwise, load instances from an instance generator
-        self.streaming = streaming
-        if not self.streaming:
-            self.instances = list(tqdm(filter(lambda i: i is not None, instance_generator), desc=name))
-        else:
-            self.instances = filter(lambda i: i is not None, instance_generator)
-
         # Set class specific things
         self.max_source_length = max_source_length
         self.tokenizer = tokenizer
 
-        # Needed for Sortish sampler
-        if n_obs is not None:
-            self.src_lens = self.src_lens[:n_obs]
+        # We want to preview a number of instances
+        self.num_instances_to_preview = num_instances_to_preview
+        self.blind_test_mode = test_mode
+        self.has_preview = num_instances_to_preview
 
         # Set pad token
         self.pad_token_id = self.tokenizer.pad_token_id
@@ -60,11 +53,22 @@ class XFactDataset(TorchDataset, Registrable, ABC):
         self.sep_token = self.tokenizer._sep_token
         logger.info(f"Sep token id is {self.sep_token_id}")
 
-        # We want to preview a number of instances
-        self.num_instances_to_preview = num_instances_to_preview
-        self.blind_test_mode = test_mode
+        # If we're streaming instances from disk, then we should continuously generate instances
+        # Otherwise, load instances from an instance generator
+        self.streaming = streaming
+        if not self.streaming:
+            self.instances = list(tqdm(filter(lambda i: i is not None, instance_generator), desc=name))
+            self.generated = list(tqdm(map(self.generate, self.instances),desc="Generating instances"))
+        else:
+            self.instances = filter(lambda i: i is not None, instance_generator)
 
-        self.has_preview = num_instances_to_preview
+        # Needed for Sortish sampler
+        if n_obs is not None:
+            self.src_lens = self.src_lens[:n_obs]
+
+
+
+
 
     def __len__(self):
         return len(self.instances)
@@ -75,8 +79,8 @@ class XFactDataset(TorchDataset, Registrable, ABC):
     def prepare_tgt(self, instance):
         raise NotImplementedError()
 
-    def __getitem__(self, index) -> Dict[str, torch.Tensor]:
-        instance = self.instances[index] if not self.streaming else next(self.instances)
+    def generate(self, instance) -> Dict[str, torch.Tensor]:
+        # instance = self.instances[index] if not self.streaming else next(self.instances)
 
         source_input = self.prepare_src(instance)
         source_inputs = encode_line(
@@ -113,6 +117,13 @@ class XFactDataset(TorchDataset, Registrable, ABC):
             ret["decoder_input_ids"] = target_ids
 
         return ret
+
+
+    def __getitem__(self, index) -> Dict[str, torch.Tensor]:
+        instance = self.generated[index] if not self.streaming else \
+            self.generate(next(self.instances))
+
+        return instance
 
 
     @staticmethod
@@ -176,6 +187,10 @@ class XFactSeq2SeqDataset(XFactDataset, ABC):
             output_prompt="",
             streaming=False
     ):
+        self.max_target_length = max_target_length
+        self.output_prompt = output_prompt
+        self.prompt_tokens = tokenizer(self.output_prompt)['input_ids'][:-1]
+
         super(XFactSeq2SeqDataset, self).__init__(tokenizer=tokenizer,
                                                   instance_generator=instance_generator,
                                                   max_source_length=max_source_length,
@@ -184,10 +199,8 @@ class XFactSeq2SeqDataset(XFactDataset, ABC):
                                                   test_mode=test_mode,
                                                   output_prompt=output_prompt,
                                                   streaming=streaming)
-        self.max_target_length = max_target_length
 
-        self.output_prompt = output_prompt
-        self.prompt_tokens = self.tokenizer(self.output_prompt)['input_ids'][:-1]
+
         logger.info(f"Output prompt tokens are {self.prompt_tokens}")
 
 
@@ -223,12 +236,7 @@ class XFactSeq2SeqDataset(XFactDataset, ABC):
 
         return ret_batch
 
-
-    def __getitem__(self, index) -> Dict[str, torch.Tensor]:
-        instance = self.instances[index] if not self.streaming else next(self.instances)
-        source_line = instance["source"]
-        tgt_line = instance["entities"]
-
+    def generate(self, instance) -> Dict[str, torch.Tensor]:
         source_input = self.prepare_src(instance)
         source_inputs = encode_line(
             self.tokenizer, source_input, self.max_source_length
