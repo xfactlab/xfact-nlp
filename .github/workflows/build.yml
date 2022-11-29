@@ -19,7 +19,7 @@ jobs:
         python-version: 3.8
     - name: Setup
       run: |
-        - python src/setup.py install
+        python src/setup.py install
     - name: Release
       uses: softprops/action-gh-release@v1
       if: startsWith(github.ref, 'refs/tags/')
