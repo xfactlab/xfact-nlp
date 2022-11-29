@@ -6,7 +6,7 @@ name: Build an deploy
 on:
   push:
     branches:
-      - 'live'
+      - 'release-v*'
       - 'main'
 jobs:
   build:
