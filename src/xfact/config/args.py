@@ -167,6 +167,11 @@ class DataTrainingArguments:
             "help": "Whether to ignore the tokens corresponding to padded labels in the loss computation or not."
         },
     )
+    package: Optional[str] = field(
+        default=None,
+        metadata={"help": "Package to import"}
+    )
+
 
     def __post_init__(self):
         if (self.train_file is None

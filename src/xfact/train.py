@@ -30,9 +30,12 @@ from xfact.nlp.deardr_trainer import DearDrTrainer
 from xfact.nlp.post_processing import PostProcessor
 from xfact.nlp.reader import Reader
 from xfact.nlp.scoring import Scorer
+from xfact.registry.module import import_submodules
 
 check_min_version("4.16.0")
 logger = logging.getLogger(__name__)
+
+
 
 
 
@@ -52,9 +55,13 @@ def main():
     #     datefmt="%m/%d/%Y %H:%M:%S",
     #     handlers=[logging.StreamHandler(sys.stdout)],
     # )
-    # transformers.utils.logging.set_verbosity(log_level)
-    # transformers.utils.logging.enable_default_handler()
-    # transformers.utils.logging.enable_explicit_format()
+    transformers.utils.logging.set_verbosity(training_args.get_process_log_level())
+    transformers.utils.logging.enable_default_handler()
+    transformers.utils.logging.enable_explicit_format()
+
+    if data_args.package:
+        logger.info("Trying to load project packages")
+        import_submodules(data_args.package)
 
     # Log on each process the small summary:
     logger.warning(
