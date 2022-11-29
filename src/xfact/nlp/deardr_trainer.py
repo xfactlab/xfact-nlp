@@ -143,6 +143,7 @@ class DearDrTrainer(Seq2SeqTrainer):
 
         if self.compute_metrics is not None:
             eval_preds = self.post_process_function(eval_examples, eval_dataset, output, self)
+
             metrics = self.compute_metrics(**eval_preds)
 
             # Prefix all keys with metric_key_prefix + '_'

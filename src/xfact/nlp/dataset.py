@@ -58,7 +58,7 @@ class XFactDataset(TorchDataset, Registrable, ABC):
 
         self.sep_token_id = self.tokenizer.vocab.get(self.sep_token)
         self.sep_token = self.tokenizer._sep_token
-        logger.info("Sep token id is ", self.sep_token_id)
+        logger.info(f"Sep token id is {self.sep_token_id}")
 
         # We want to preview a number of instances
         self.num_instances_to_preview = num_instances_to_preview
@@ -188,7 +188,7 @@ class XFactSeq2SeqDataset(XFactDataset, ABC):
 
         self.output_prompt = output_prompt
         self.prompt_tokens = self.tokenizer(self.output_prompt)['input_ids'][:-1]
-        logger.info("Output prompt tokens are ", self.prompt_tokens)
+        logger.info(f"Output prompt tokens are {self.prompt_tokens}")
 
 
     @staticmethod

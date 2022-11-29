@@ -41,12 +41,12 @@ class ColoredFormatter(logging.Formatter):
         return logging.Formatter.format(self, record)
 
 
-def setup_logging():
+def setup_logging(log_level=os.environ.get("LOGLEVEL", "INFO")):
     color_formatter = ColoredFormatter(COLOR_FORMAT)
     h = logging.StreamHandler(None)
     h.setFormatter(color_formatter)
     logging.root.addHandler(h)
-    logging.root.setLevel(os.environ.get("LOGLEVEL", "INFO"))
+    logging.root.setLevel(log_level)
 
 
 if __name__ == "__main__":

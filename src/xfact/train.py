@@ -24,10 +24,12 @@ from xfact.config.args import ModelArguments, DataTrainingArguments
 
 # from deardr.training.comet_logging_callback import CometTrainingCallback
 # from deardr.training.deardr_trainer import DearDrTrainer
+from xfact.logs.logs import setup_logging
 from xfact.nlp.dataset import XFactDataset
 from xfact.nlp.deardr_trainer import DearDrTrainer
-from xfact.nlp.inference.post_processing import PostProcessor
+from xfact.nlp.post_processing import PostProcessor
 from xfact.nlp.reader import Reader
+from xfact.nlp.scoring import Scorer
 
 check_min_version("4.16.0")
 logger = logging.getLogger(__name__)
@@ -43,19 +45,16 @@ def main():
     else:
         model_args, data_args, training_args, remaining_args = parser.parse_args_into_dataclasses(return_remaining_strings=True)
 
-    # Setup logging
-    logging.basicConfig(
-        format="%(asctime)s - %(levelname)s - %(name)s - %(message)s",
-        datefmt="%m/%d/%Y %H:%M:%S",
-        handlers=[logging.StreamHandler(sys.stdout)],
-    )
-
-    log_level = training_args.get_process_log_level()
-    logger.setLevel(log_level)
-
-    transformers.utils.logging.set_verbosity(log_level)
-    transformers.utils.logging.enable_default_handler()
-    transformers.utils.logging.enable_explicit_format()
+    setup_logging(training_args.get_process_log_level())
+    # # Setup logging
+    # logging.basicConfig(
+    #     format="%(asctime)s - %(levelname)s - %(name)s - %(message)s",
+    #     datefmt="%m/%d/%Y %H:%M:%S",
+    #     handlers=[logging.StreamHandler(sys.stdout)],
+    # )
+    # transformers.utils.logging.set_verbosity(log_level)
+    # transformers.utils.logging.enable_default_handler()
+    # transformers.utils.logging.enable_explicit_format()
 
     # Log on each process the small summary:
     logger.warning(
@@ -191,22 +190,9 @@ def main():
     #
     data_collator = lambda batch: dataset_cls.collate_fn(model, batch, tokenizer.pad_token_id, data_args.ignore_pad_token_for_loss)
 
-    post_processor = PostProcessor.init("default", **{"tokenizer": tokenizer, "model": model})
+    post_processor = PostProcessor.init("nested", **{"tokenizer": tokenizer, "model": model})
+    metrics = Scorer.init("multiset_information_retrieval")
 
-
-    def compute_metrics(actual, predicted, **kwargs):
-
-        return {
-            "macro_recall": macro(max_over_many(recall), actual, predicted),
-            "macro_precision": macro(max_over_many(precision), actual, predicted),
-            "macro_f1": macro(max_over_many(f1), actual, predicted),
-            "macro_r_precision": macro(max_over_many(r_precision), actual, predicted),
-            "macro_average_precision": macro(max_over_many(average_precision), actual, predicted),
-            "macro_recall_corrected": macro(max_over_many(recall_corrected), actual, predicted),
-            "macro_precision_corrected": macro(max_over_many(precision_corrected), actual, predicted),
-            "macro_reciprocal_rank": macro(max_over_many(reciprocal_rank), actual, predicted),
-            "macro_average_precision_corrected": macro(max_over_many(average_precision_corrected), actual, predicted)
-        }
 
 
     # logging_callback = CometTrainingCallback(experiment)
@@ -224,7 +210,7 @@ def main():
         eval_examples=list(map(itemgetter("instance"), loaded_datasets["validation"].instances)) if training_args.do_eval else None,
         tokenizer=tokenizer,
         data_collator=data_collator,
-        compute_metrics=compute_metrics,
+        compute_metrics=metrics,
         post_process_function=post_processor.process_text,
         train_beam=data_args.train_beam,
         # prefix_decode=prefix_decode(tokenizer, model_args.prefix_path),

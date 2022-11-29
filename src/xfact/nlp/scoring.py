@@ -1,4 +1,60 @@
 import numpy as np
+from abc import ABC
+from xfact.registry.registrable import Registrable
+
+
+class Scorer(Registrable, ABC):
+    def __call__(self, actual, predictions, **kwargs):
+        raise NotImplementedError()
+
+
+@Scorer.register("multiset_information_retrieval")
+class InformationRetrievalScorer(Scorer):
+
+    def __call__(self, actual, predicted, **kwargs):
+        return {
+            "macro_recall": macro(max_over_many(recall), actual, predicted),
+            "macro_precision": macro(max_over_many(precision), actual, predicted),
+            "macro_f1": macro(max_over_many(f1), actual, predicted),
+            "macro_r_precision": macro(max_over_many(r_precision), actual, predicted),
+            "macro_average_precision": macro(max_over_many(average_precision), actual, predicted),
+            "macro_recall_corrected": macro(max_over_many(recall_corrected), actual, predicted),
+            "macro_precision_corrected": macro(max_over_many(precision_corrected), actual, predicted),
+            "macro_reciprocal_rank": macro(max_over_many(reciprocal_rank), actual, predicted),
+            "macro_average_precision_corrected": macro(max_over_many(average_precision_corrected), actual, predicted)
+        }
+
+
+@Scorer.register("information_retrieval")
+class InformationRetrievalScorer(Scorer):
+
+    def __call__(self, actual, predicted, **kwargs):
+        return {
+            "macro_recall": macro(recall, actual, predicted),
+            "macro_precision": macro(precision, actual, predicted),
+            "macro_f1": macro(f1, actual, predicted),
+            "macro_r_precision": macro(r_precision, actual, predicted),
+            "macro_average_precision": macro(average_precision, actual, predicted),
+            "macro_recall_corrected": macro(recall_corrected, actual, predicted),
+            "macro_precision_corrected": macro(precision_corrected, actual, predicted),
+            "macro_reciprocal_rank": macro(reciprocal_rank, actual, predicted),
+            "macro_average_precision_corrected": macro(average_precision_corrected, actual, predicted)
+        }
+
+
+@Scorer.register("classification")
+class InformationRetrievalScorer(Scorer):
+    def score(self, actual, predicted, **kwargs):
+        return {
+            "macro_recall": macro(recall, actual, predicted),
+            "macro_precision": macro(precision, actual, predicted),
+            "macro_f1": macro(f1, actual, predicted),
+            "macro_em": macro(exact_match, actual, predicted)
+        }
+
+
+def exact_match(actual, predicted):
+    return 1.0 if actual == predicted else 0.0
 
 
 def lrp(actual, predicted):
@@ -52,10 +108,8 @@ def average_precision(actual, predicted):
             r.append(1)
         else:
             r.append(0)
-    print(r)
     r = np.asarray(r) != 0
     out = [precision_at_k(r, k + 1) for k in range(r.size) if r[k]]
-    print(out)
     if not out:
         return 0.
     return np.mean(out)
@@ -66,7 +120,6 @@ def average_precision_corrected(actual, predicted):
     https://gist.github.com/bwhite/3726239
     """
     r = []
-    print(actual, predicted)
     found = False
     predicted_len = len(predicted) - 1
     for j, _ in enumerate(predicted):
@@ -141,3 +194,5 @@ def max_over_many(method):
             scores.append(method(actual, predicted))
         return max(scores)
     return apply_multi
+
+
