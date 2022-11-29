@@ -6,10 +6,11 @@ from torch.utils.data import Dataset as TorchDataset
 from tqdm import tqdm
 from typing import Dict
 from pathlib import Path
-from deardr.data_utils import encode_line, trim_batch, SortishSampler
+from xfact.nlp.data_utils import encode_line, trim_batch, SortishSampler
 from xfact.registry.registrable import Registrable
 
 logger = logging.getLogger(__name__)
+
 
 class XFactDataset(TorchDataset, Registrable, ABC):
     def __init__(

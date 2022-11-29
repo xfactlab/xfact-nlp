@@ -14,16 +14,19 @@ from transformers import (
 )
 from transformers.trainer_utils import get_last_checkpoint, EvalLoopOutput
 from transformers.utils import check_min_version
+from xfact.config.args import ModelArguments, DataTrainingArguments
 
-from deardr.frontend import frontend_types, PretrainPT
-from deardr.inference.post_processing import post_process
-from deardr.inference.prefix_decoder import single_document_prefix, multi_document_prefix
-from deardr.inference.scoring import precision, recall, r_precision, macro, f1, max_over_many, average_precision, \
-    recall_corrected, precision_corrected, reciprocal_rank, average_precision_corrected
-from deardr.training.args import ModelArguments, DataTrainingArguments
-from deardr.training.comet_logging_callback import CometTrainingCallback
-from deardr.training.deardr_trainer import DearDrTrainer
+
+# from deardr.inference.post_processing import post_process
+# from deardr.inference.prefix_decoder import single_document_prefix, multi_document_prefix
+# from deardr.inference.scoring import precision, recall, r_precision, macro, f1, max_over_many, average_precision, \
+#     recall_corrected, precision_corrected, reciprocal_rank, average_precision_corrected
+
+# from deardr.training.comet_logging_callback import CometTrainingCallback
+# from deardr.training.deardr_trainer import DearDrTrainer
 from xfact.nlp.dataset import XFactDataset
+from xfact.nlp.deardr_trainer import DearDrTrainer
+from xfact.nlp.inference.post_processing import PostProcessor
 from xfact.nlp.reader import Reader
 
 check_min_version("4.16.0")
@@ -188,6 +191,9 @@ def main():
     #
     data_collator = lambda batch: dataset_cls.collate_fn(model, batch, tokenizer.pad_token_id, data_args.ignore_pad_token_for_loss)
 
+    post_processor = PostProcessor.init("default", **{"tokenizer": tokenizer, "model": model})
+
+
     def compute_metrics(actual, predicted, **kwargs):
 
         return {
@@ -203,10 +209,12 @@ def main():
         }
 
 
-    logging_callback = CometTrainingCallback(experiment)
+    # logging_callback = CometTrainingCallback(experiment)
     trainer_cls = DearDrTrainer # Maybe do multiple beams with DearDrPredictor but this is SLLOOOOWWWW
 
-    prefix_decode = single_document_prefix if  isinstance(readers["validation"], PretrainPT) else multi_document_prefix
+    # prefix_decode = single_document_prefix if  isinstance(readers["validation"], PretrainPT) else multi_document_prefix
+
+
 
     trainer = trainer_cls(
         model=model,
@@ -217,10 +225,10 @@ def main():
         tokenizer=tokenizer,
         data_collator=data_collator,
         compute_metrics=compute_metrics,
-        post_process_function=post_process,
+        post_process_function=post_processor.process_text,
         train_beam=data_args.train_beam,
         # prefix_decode=prefix_decode(tokenizer, model_args.prefix_path),
-        callbacks=[logging_callback]
+        # callbacks=[logging_callback]
     )
 
 

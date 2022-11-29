@@ -1,4 +1,4 @@
-from deardr.preprocessing import recover, flatten_and_deduplicate, deduplicate_list_of_lists
+from xfact_project.preprocessing import recover, flatten_and_deduplicate, deduplicate_list_of_lists
 from xfact.nlp.reader import Reader
 
 

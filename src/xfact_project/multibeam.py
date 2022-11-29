@@ -1,9 +1,3 @@
-import re
-from collections import OrderedDict
-
-from deardr.dataset.page_title_prediction_dataset import PageTitlePredictionDataset
-from deardr.preprocessing import recover
-
 
 def post_process_test_multibeam(examples, features, predictions, trainer):
 
@@ -26,10 +20,6 @@ def post_process_test_multibeam(examples, features, predictions, trainer):
             resultset.update({k: 1 for k in beam})
         results.append(list(resultset.keys()))
 
-        # resultset = Counter()
-        # for beam in inst:
-        #     resultset.update({b:1 for b in beam})
-        # results.append([k[0] for k in resultset.most_common(10)])
     assert len(results) == len(examples) == len(predictions.predictions)
     yield from zip(results, examples, predictions.predictions)
 
