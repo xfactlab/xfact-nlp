@@ -17,8 +17,8 @@ setup(
     description='xfact',
     long_description="readme",
     python_requires='>=3.8',
-    packages=find_packages(),
+    packages=["xfact","xfact.nlp","xfact.config","xfact.logs","xfact.registry"],
     install_requires=install,
     dependency_links=depends,
-    package_dir={'':'src','xfact':'src/xfact'}
+    package_dir={'':'src'}
 )
