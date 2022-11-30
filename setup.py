@@ -1,4 +1,4 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 
 with open('requirements.txt') as f:
     reqs = f.read()
@@ -17,7 +17,7 @@ setup(
     description='xfact',
     long_description="readme",
     python_requires='>=3.8',
-    packages=['xfact'],
+    packages=find_packages(),
     install_requires=install,
     dependency_links=depends,
     package_dir={'':'src'}
