@@ -20,5 +20,5 @@ setup(
     packages=find_packages(),
     install_requires=install,
     dependency_links=depends,
-    package_dir={'':'src'}
+    package_dir={'':'src','xfact':'src/xfact'}
 )
