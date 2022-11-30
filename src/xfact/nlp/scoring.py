@@ -4,7 +4,7 @@ from xfact.registry.registrable import Registrable
 
 
 class Scorer(Registrable, ABC):
-    def __call__(self, actual, predictions, **kwargs):
+    def __call__(self, actual, predicted, **kwargs):
         raise NotImplementedError()
 
 
@@ -43,7 +43,7 @@ class InformationRetrievalScorer(Scorer):
 
 
 @Scorer.register("classification")
-class InformationRetrievalScorer(Scorer):
+class ClassificationScorer(Scorer):
     def score(self, actual, predicted, **kwargs):
         return {
             "macro_recall": macro(recall, actual, predicted),
