@@ -44,7 +44,7 @@ class InformationRetrievalScorer(Scorer):
 
 @Scorer.register("classification")
 class ClassificationScorer(Scorer):
-    def score(self, actual, predicted, **kwargs):
+    def __call__(self, actual, predicted, **kwargs):
         return {
             "macro_recall": macro(recall, actual, predicted),
             "macro_precision": macro(precision, actual, predicted),
