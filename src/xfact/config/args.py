@@ -68,6 +68,14 @@ class DataTrainingArguments:
         default=None,
         metadata={"help": "Dataset dataset"}
     )
+    postprocessing: Optional[str] = field(
+        default="default",
+        metadata="post processing to do"
+    )
+    scorer: Optional[str] = field(
+        default="classification",
+        metadata="loading scorer function"
+    )
     experiment_name: Optional[str] = field(
         default=None,
         metadata={"help": "Experiment name"}

@@ -66,12 +66,8 @@ class XFactDataset(TorchDataset, Registrable, ABC):
         if n_obs is not None:
             self.src_lens = self.src_lens[:n_obs]
 
-
-
-
-
     def __len__(self):
-        return len(self.instances)
+        return len(self.generated)
 
     def prepare_src(self, instance):
         raise NotImplementedError()
@@ -124,7 +120,6 @@ class XFactDataset(TorchDataset, Registrable, ABC):
             self.generate(next(self.instances))
 
         return instance
-
 
     @staticmethod
     def get_char_lens(data_file):
@@ -202,7 +197,6 @@ class XFactSeq2SeqDataset(XFactDataset, ABC):
 
 
         logger.info(f"Output prompt tokens are {self.prompt_tokens}")
-
 
     @staticmethod
     def collate_fn(model, batch,pad_token_id, ignore_pad_token_for_loss=True) -> Dict[str, torch.Tensor]:

@@ -197,8 +197,8 @@ def main():
     #
     data_collator = lambda batch: dataset_cls.collate_fn(model, batch, tokenizer.pad_token_id, data_args.ignore_pad_token_for_loss)
 
-    post_processor = PostProcessor.init("nested", **{"tokenizer": tokenizer, "model": model})
-    metrics = Scorer.init("multiset_information_retrieval")
+    post_processor = PostProcessor.init(data_args.post_processor, **{"tokenizer": tokenizer, "model": model})
+    scorer = Scorer.init(data_args.scorer)
 
 
 
@@ -217,7 +217,7 @@ def main():
         eval_examples=list(map(itemgetter("instance"), loaded_datasets["validation"].instances)) if training_args.do_eval else None,
         tokenizer=tokenizer,
         data_collator=data_collator,
-        compute_metrics=metrics,
+        compute_metrics=scorer,
         post_process_function=post_processor.process_text,
         train_beam=data_args.train_beam,
         # prefix_decode=prefix_decode(tokenizer, model_args.prefix_path),
