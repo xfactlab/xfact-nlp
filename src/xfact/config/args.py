@@ -68,7 +68,7 @@ class DataTrainingArguments:
         default=None,
         metadata={"help": "Dataset dataset"}
     )
-    postprocessing: Optional[str] = field(
+    post_processor: Optional[str] = field(
         default="default",
         metadata={"help": "Dataset dataset"}
     )
