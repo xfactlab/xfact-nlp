@@ -261,7 +261,7 @@ def main():
         trainer.log_metrics("eval", metrics)
         trainer.save_metrics("eval", metrics)
 
-        if trainer.is_world_process_zero():
+        if trainer.is_world_process_zero() and experiment:
             experiment.log(payload={"final/" + key: value for key, value in metrics.items()})
 
     kwargs = {"finetuned_from": model_args.model_name_or_path, "tasks": "dear-dr"}
