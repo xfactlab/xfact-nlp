@@ -53,6 +53,16 @@ class ClassificationScorer(Scorer):
         }
 
 
+
+
+@Scorer.register("qa")
+class ClassificationScorer(Scorer):
+    def __call__(self, actual, predicted, **kwargs):
+        return {
+            "macro_em": macro(exact_match, actual, predicted)
+        }
+
+
 def exact_match(actual, predicted):
     return 1.0 if actual == predicted else 0.0
 
