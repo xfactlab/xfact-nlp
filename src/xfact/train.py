@@ -25,7 +25,7 @@ from xfact.config.args import ModelArguments, DataTrainingArguments
 # from deardr.training.comet_logging_callback import CometTrainingCallback
 # from deardr.training.deardr_trainer import DearDrTrainer
 from xfact.logs.logs import setup_logging
-from xfact.nlp.dataset import XFactDataset
+from xfact.nlp.dataset import XFactDataset, XFactSeq2SeqDataset
 from xfact.nlp.deardr_trainer import DearDrTrainer
 from xfact.nlp.post_processing import PostProcessor
 from xfact.nlp.reader import Reader
@@ -156,13 +156,22 @@ def main():
         dataset_classes["validation"] = dataset_classes["train"]
         readers["validation"] = readers["train"]
 
+    is_seq2seq = isinstance(dataset_classes["train"],XFactSeq2SeqDataset)
+    logger.info(f"Is seq2seq? {is_seq2seq}")
+
+    extra_kwargs = {}
+
+    if is_seq2seq:
+        extra_kwargs["max_target_length"] = data_args.max_target_length
+
     loaded_datasets = {
         split: dataset_classes[split](tokenizer,
                                                readers[split].read(path),
                                                max_seq_length,
-                                               max_target_length=data_args.max_target_length,
                                                name=split,
-                                               test_mode=False
+                                               test_mode=False,
+                                      **extra_kwargs
+
                                                )
         for split, path in data_files.items()
     }

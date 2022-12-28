@@ -1,5 +1,6 @@
 import logging
 from abc import ABC
+from collections import defaultdict
 
 import torch
 from torch.utils.data import Dataset as TorchDataset
@@ -8,7 +9,7 @@ from typing import Dict
 from pathlib import Path
 from xfact.nlp.data_utils import encode_line, trim_batch, SortishSampler
 from xfact.registry.registrable import Registrable
-
+from overrides import overrides
 logger = logging.getLogger(__name__)
 
 
@@ -58,7 +59,7 @@ class XFactDataset(TorchDataset, Registrable, ABC):
         self.streaming = streaming
         if not self.streaming:
             self.instances = list(tqdm(filter(lambda i: i is not None, instance_generator), desc=name))
-            self.generated = list(tqdm(map(self.generate, self.instances),desc="Generating instances"))
+            self.generated = list(tqdm(map(self.generate, self.instances), desc="Generating instances"))
         else:
             self.instances = filter(lambda i: i is not None, instance_generator)
 
@@ -76,44 +77,7 @@ class XFactDataset(TorchDataset, Registrable, ABC):
         raise NotImplementedError()
 
     def generate(self, instance) -> Dict[str, torch.Tensor]:
-        # instance = self.instances[index] if not self.streaming else next(self.instances)
-
-        source_input = self.prepare_src(instance)
-        source_inputs = encode_line(
-            self.tokenizer, source_input, self.max_source_length
-        )
-
-        source_ids = source_inputs["input_ids"].squeeze()
-        src_mask = source_inputs["attention_mask"].squeeze()
-
-        if not self.blind_test_mode:
-            target_input = self.prepare_tgt(instance)
-            target_inputs = encode_line(
-                self.tokenizer, target_input, self.max_target_length
-            )
-            target_ids = target_inputs["input_ids"].squeeze()
-
-        if self.num_instances_to_preview >=0:
-            self.has_preview -= 1
-            print(source_input)
-            print(source_ids)
-
-            if not self.blind_test_mode:
-                print(target_input)
-                print(target_ids)
-
-            print("*" * 100)
-
-        ret = {
-            "input_ids": source_ids,
-            "attention_mask": src_mask
-        }
-
-        if not self.blind_test_mode:
-            ret["decoder_input_ids"] = target_ids
-
-        return ret
-
+        raise NotImplementedError()
 
     def __getitem__(self, index) -> Dict[str, torch.Tensor]:
         instance = self.generated[index] if not self.streaming else \
@@ -134,7 +98,7 @@ class XFactDataset(TorchDataset, Registrable, ABC):
         return source_ids, source_mask, y
 
     @staticmethod
-    def collate_fn(model, batch,pad_token_id, ignore_pad_token_for_loss=True) -> Dict[str, torch.Tensor]:
+    def collate_fn(model, batch, pad_token_id, ignore_pad_token_for_loss=True) -> Dict[str, torch.Tensor]:
         input_ids = torch.stack([x["input_ids"] for x in batch])
         masks = torch.stack([x["attention_mask"] for x in batch])
 
@@ -195,11 +159,10 @@ class XFactSeq2SeqDataset(XFactDataset, ABC):
                                                   output_prompt=output_prompt,
                                                   streaming=streaming)
 
-
         logger.info(f"Output prompt tokens are {self.prompt_tokens}")
 
     @staticmethod
-    def collate_fn(model, batch,pad_token_id, ignore_pad_token_for_loss=True) -> Dict[str, torch.Tensor]:
+    def collate_fn(model, batch, pad_token_id, ignore_pad_token_for_loss=True) -> Dict[str, torch.Tensor]:
         input_ids = torch.stack([x["input_ids"] for x in batch])
         masks = torch.stack([x["attention_mask"] for x in batch])
 
@@ -246,7 +209,7 @@ class XFactSeq2SeqDataset(XFactDataset, ABC):
             )
             target_ids = target_inputs["input_ids"].squeeze()
 
-        if self.has_preview >=0:
+        if self.has_preview >= 0:
             self.has_preview -= 1
             print(source_input)
             print(source_ids)
@@ -272,8 +235,51 @@ class XFactTaggingDataset(XFactDataset):
     pass
 
 
-class XFactClassificationDataset(XFactDataset):
-    pass
+class XFactClassificationDataset(XFactDataset, ABC):
+    def __init__(self, tokenizer, instance_generator, max_source_length,**kwargs):
+        self.label_dict = defaultdict(int)
+        super().__init__(tokenizer, instance_generator, max_source_length,**kwargs)
+
+    def prepare_tgt(self, instance):
+        return instance["label"]
+
+    @overrides
+    def generate(self, instance) -> Dict[str, torch.Tensor]:
+        # instance = self.instances[index] if not self.streaming else next(self.instances)
+
+        source_input = self.prepare_src(instance)
+        source_inputs = encode_line(
+            self.tokenizer, source_input, self.max_source_length
+        )
+
+        source_ids = source_inputs["input_ids"].squeeze()
+        src_mask = source_inputs["attention_mask"].squeeze()
+
+        if not self.blind_test_mode:
+            target_input = self.prepare_tgt(instance)
+
+            if target_input not in self.label_dict:
+                self.label_dict[target_input] = len(self.label_dict)
+            target_ids = self.label_dict[target_input]
 
 
+        if self.num_instances_to_preview >= 0:
+            self.num_instances_to_preview -= 1
+            print(source_input)
+            print(source_ids)
 
+            if not self.blind_test_mode:
+                print(target_input)
+                print(target_ids)
+
+            print("*" * 100)
+
+        ret = {
+            "input_ids": source_ids,
+            "attention_mask": src_mask
+        }
+
+        if not self.blind_test_mode:
+            ret["decoder_input_ids"] = target_ids
+
+        return ret
