@@ -6,11 +6,67 @@ from torch.utils.data import Dataset
 from transformers.deepspeed import is_deepspeed_zero3_enabled
 
 from transformers.trainer_seq2seq import Seq2SeqTrainer
-from transformers import is_torch_tpu_available
+from transformers import is_torch_tpu_available, Trainer
 
 if is_torch_tpu_available():
     import torch_xla.core.xla_model as xm
     import torch_xla.debug.metrics as met
+
+
+class XFactClsTrainer(Trainer):
+    def __init__(self,eval_examples=None,post_process_function=None, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.eval_examples = eval_examples
+        self.post_process_function = post_process_function
+
+    def evaluate(
+        self,
+        eval_dataset: Optional[Dataset] = None,
+        eval_examples=None,
+        ignore_keys: Optional[List[str]] = None,
+        metric_key_prefix: str = "eval"
+    ) -> Dict[str, float]:
+        eval_dataset = self.eval_dataset if eval_dataset is None else eval_dataset
+        eval_dataloader = self.get_eval_dataloader(eval_dataset)
+        eval_examples = self.eval_examples if eval_examples is None else eval_examples
+
+        # Temporarily disable metric computation, we will do it in the loop here.
+        compute_metrics = self.compute_metrics
+        self.compute_metrics = None
+        eval_loop = self.evaluation_loop
+        try:
+            output = eval_loop(
+                eval_dataloader,
+                description="Evaluation",
+                # No point gathering the predictions if there are no metrics, otherwise we defer to
+                # self.args.prediction_loss_only
+                prediction_loss_only=True if compute_metrics is None else None,
+                ignore_keys=ignore_keys,
+            )
+        finally:
+            self.compute_metrics = compute_metrics
+
+        if self.compute_metrics is not None:
+            eval_preds = self.post_process_function(eval_examples, eval_dataset, output, self)
+
+            metrics = self.compute_metrics(**eval_preds)
+
+            # Prefix all keys with metric_key_prefix + '_'
+            for key in list(metrics.keys()):
+                if not key.startswith(f"{metric_key_prefix}_"):
+                    metrics[f"{metric_key_prefix}_{key}"] = metrics.pop(key)
+
+            metrics.update(output.metrics)
+            self.log(metrics)
+        else:
+            metrics = {}
+
+        if self.args.tpu_metrics_debug or self.args.debug:
+            # tpu-comment: Logging debug metrics for PyTorch/XLA (compile, execute times, ops, etc.)
+            xm.master_print(met.metrics_report())
+
+        self.control = self.callback_handler.on_evaluate(self.args, self.state, self.control, metrics)
+        return metrics
 
 
 class DearDrTrainer(Seq2SeqTrainer):

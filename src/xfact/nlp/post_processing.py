@@ -36,6 +36,19 @@ class DefaultPostProcessor(PostProcessor):
         }
 
 
+@PostProcessor.register("classification")
+class LabelOnly(PostProcessor):
+    def process_text(self, examples, features, predictions, trainer):
+        predicted = [trainer.model.config.id2label[p] for p in predictions.predictions.argmax(axis=-1)]
+        actual = [trainer.model.config.id2label[p.item()] for p in predictions.label_ids]
+
+        assert len(actual) == len(examples) == len(predicted)
+
+        return {
+            "predicted": predicted,
+            "actual": actual
+        }
+
 @PostProcessor.register("nested")
 class NestedPostProcessor(PostProcessor):
     def process_text(self, examples, features, predictions, trainer):

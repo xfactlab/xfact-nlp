@@ -46,11 +46,13 @@ class InformationRetrievalScorer(Scorer):
 class ClassificationScorer(Scorer):
     def __call__(self, actual, predicted, **kwargs):
         return {
-            "macro_recall": macro(recall, actual, predicted),
-            "macro_precision": macro(precision, actual, predicted),
-            "macro_f1": macro(f1, actual, predicted),
-            "macro_em": macro(exact_match, actual, predicted)
+            # "macro_recall": macro(recall, actual, predicted),
+            # "macro_precision": macro(precision, actual, predicted),
+            # "macro_f1": macro(f1, actual, predicted),
+            "em": macro(exact_match, actual, predicted)
         }
+
+
 
 
 
@@ -59,7 +61,7 @@ class ClassificationScorer(Scorer):
 class ClassificationScorer(Scorer):
     def __call__(self, actual, predicted, **kwargs):
         return {
-            "macro_em": macro(exact_match, actual, predicted)
+            "em": macro(exact_match, actual, predicted)
         }
 
 

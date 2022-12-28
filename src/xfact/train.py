@@ -11,7 +11,7 @@ from transformers import (
     HfArgumentParser,
     TrainingArguments,
     set_seed, T5ForConditionalGeneration, BartForConditionalGeneration, AutoModelForSeq2SeqLM,
-    AutoModelForSequenceClassification
+    AutoModelForSequenceClassification, Trainer
 )
 from transformers.trainer_utils import get_last_checkpoint, EvalLoopOutput
 from transformers.utils import check_min_version
@@ -27,7 +27,7 @@ from xfact.config.args import ModelArguments, DataTrainingArguments
 # from deardr.training.deardr_trainer import DearDrTrainer
 from xfact.logs.logs import setup_logging
 from xfact.nlp.dataset import XFactDataset, XFactSeq2SeqDataset
-from xfact.nlp.deardr_trainer import DearDrTrainer
+from xfact.nlp.deardr_trainer import DearDrTrainer, XFactClsTrainer
 from xfact.nlp.post_processing import PostProcessor
 from xfact.nlp.reader import Reader
 from xfact.nlp.scoring import Scorer
@@ -231,7 +231,7 @@ def main():
 
 
     # logging_callback = CometTrainingCallback(experiment)
-    trainer_cls = DearDrTrainer # Maybe do multiple beams with DearDrPredictor but this is SLLOOOOWWWW
+    trainer_cls = DearDrTrainer if is_seq2seq else XFactClsTrainer # Maybe do multiple beams with DearDrPredictor but this is SLLOOOOWWWW
 
     # prefix_decode = single_document_prefix if  isinstance(readers["validation"], PretrainPT) else multi_document_prefix
 
@@ -247,7 +247,7 @@ def main():
         data_collator=data_collator,
         compute_metrics=scorer,
         post_process_function=post_processor.process_text,
-        train_beam=data_args.train_beam,
+        # train_beam=data_args.train_beam,
         # prefix_decode=prefix_decode(tokenizer, model_args.prefix_path),
         # callbacks=[logging_callback]
     )
