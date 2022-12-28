@@ -20,6 +20,7 @@ jobs:
     - name: Set Version
       run: |
         export VERSION_NUMBER=$(echo ${GITHUB_REF:-v0.0} | cut -d'v' -f 2).${GITHUB_RUN_NUMBER}
+        echo "VERSION " $VERSION_NUMBER
         sed -i -e 's/0\.0\.0/'"$VERSION_NUMBER"'/g' setup.py
         echo "VERSION " $VERSION_NUMBER
     - name: Install
