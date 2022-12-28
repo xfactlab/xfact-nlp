@@ -260,7 +260,7 @@ class XFactClassificationDataset(XFactDataset, ABC):
 
             if target_input not in self.label_dict:
                 self.label_dict[target_input] = len(self.label_dict)
-            target_ids = self.label_dict[target_input]
+            target_ids = torch.LongTensor([self.label_dict[target_input]])
 
 
         if self.num_instances_to_preview >= 0:

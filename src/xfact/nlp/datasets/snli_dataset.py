@@ -15,5 +15,6 @@ class SNLIReader(Reader):
             yield {
                 "sentence1": instance["sentence1"],
                 "sentence2": instance["sentence2"],
-                "label": instance["gold_label"]
+                "label": instance["gold_label"],
+                "instance": instance
             }

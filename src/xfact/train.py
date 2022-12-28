@@ -10,7 +10,8 @@ from transformers import (
     BartTokenizer,
     HfArgumentParser,
     TrainingArguments,
-    set_seed, T5ForConditionalGeneration, BartForConditionalGeneration, AutoModelForSeq2SeqLM
+    set_seed, T5ForConditionalGeneration, BartForConditionalGeneration, AutoModelForSeq2SeqLM,
+    AutoModelForSequenceClassification
 )
 from transformers.trainer_utils import get_last_checkpoint, EvalLoopOutput
 from transformers.utils import check_min_version
@@ -112,12 +113,7 @@ def main():
     # Distributed training:
     # The .from_pretrained methods guarantee that only one local process can concurrently
     # download model & vocab.
-    config = AutoConfig.from_pretrained(
-        model_args.config_name if model_args.config_name else model_args.model_name_or_path,
-        cache_dir=model_args.cache_dir,
-        revision=model_args.model_revision,
-        use_auth_token=True if model_args.use_auth_token else None,
-    )
+
     tokenizer = AutoTokenizer.from_pretrained(
         model_args.tokenizer_name if model_args.tokenizer_name else model_args.model_name_or_path,
         cache_dir=model_args.cache_dir,
@@ -177,23 +173,8 @@ def main():
     }
 
     # Don't use true/false check here as 0 is falsey
-    if model_args.dropout_rate is not None:
-        config.dropout_rate = model_args.dropout_rate
 
 
-    model = AutoModelForSeq2SeqLM.from_pretrained(
-        model_args.model_name_or_path,
-        from_tf=bool(".ckpt" in model_args.model_name_or_path),
-        config=config,
-        cache_dir=model_args.cache_dir,
-        revision=model_args.model_revision,
-        use_auth_token=True if model_args.use_auth_token else None,
-    )
-
-
-    if len(tokenizer.vocab) > tok_length:
-        print("resizing vocab")
-        model.resize_token_embeddings(len(tokenizer))
 
     if training_args.do_train:
         if "train" not in loaded_datasets:
@@ -204,8 +185,46 @@ def main():
             raise ValueError("--do_eval requires a validation dataset")
     #
     #
-    data_collator = lambda batch: dataset_cls.collate_fn(model, batch, tokenizer.pad_token_id, data_args.ignore_pad_token_for_loss)
 
+    extra_model_kwargs = {}
+    if is_seq2seq:
+        model_cls = AutoModelForSeq2SeqLM
+
+    else:
+        model_cls = AutoModelForSequenceClassification
+        extra_model_kwargs["num_labels"] = len(loaded_datasets["train"].label_dict)
+        extra_model_kwargs["label2id"] = loaded_datasets["train"].label_dict
+        extra_model_kwargs["id2label"] = {v:k for k,v in loaded_datasets["train"].label_dict.items()}
+
+    config = AutoConfig.from_pretrained(
+        model_args.config_name if model_args.config_name else model_args.model_name_or_path,
+        cache_dir=model_args.cache_dir,
+        revision=model_args.model_revision,
+        use_auth_token=True if model_args.use_auth_token else None,
+        **extra_model_kwargs
+    )
+    if model_args.dropout_rate is not None:
+        config.dropout_rate = model_args.dropout_rate
+
+    model = model_cls.from_pretrained(
+        model_args.model_name_or_path,
+        from_tf=bool(".ckpt" in model_args.model_name_or_path),
+        config=config,
+        cache_dir=model_args.cache_dir,
+        revision=model_args.model_revision,
+        use_auth_token=True if model_args.use_auth_token else None,
+
+    )
+
+
+    if len(tokenizer.vocab) > tok_length:
+        print("resizing vocab")
+        model.resize_token_embeddings(len(tokenizer))
+
+
+
+
+    data_collator = lambda batch: dataset_cls.collate_fn(model, batch, tokenizer.pad_token_id, data_args.ignore_pad_token_for_loss)
     post_processor = PostProcessor.init(data_args.post_processor, **{"tokenizer": tokenizer, "model": model})
     scorer = Scorer.init(data_args.scorer)
 
