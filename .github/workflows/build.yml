@@ -18,8 +18,9 @@ jobs:
       with:
         python-version: 3.8
     - name: Set Version
+      if: startsWith(github.ref, 'refs/heads/release-v')
       run: |
-        export VERSION_NUMBER=$(echo ${GITHUB_REF:-v0.0} | cut -d'v' -f 2).${GITHUB_RUN_NUMBER}
+        export VERSION_NUMBER=$(echo ${GITHUB_REF} | cut -d'v' -f 2).${GITHUB_RUN_NUMBER}
         echo "VERSION " $VERSION_NUMBER
         sed -i -e 's/0\.0\.0/'"$VERSION_NUMBER"'/g' setup.py
         echo "VERSION " $VERSION_NUMBER
