@@ -19,7 +19,7 @@ setup(
     python_requires='>=3.8',
     packages=["xfact",
               "xfact.nlp",
-              "xfact.datasets",
+              "xfact.nlp.datasets",
               "xfact.config",
               "xfact.logs",
               "xfact.registry",
