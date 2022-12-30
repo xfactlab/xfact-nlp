@@ -141,13 +141,13 @@ def main():
         dataset_classes["validation"] = dataset_classes["train"]
         readers["validation"] = readers["train"]
 
-    is_seq2seq = isinstance(dataset_classes["train"],XFactSeq2SeqDataset)
+    is_seq2seq = issubclass(dataset_classes["train"],XFactSeq2SeqDataset)
     logger.info(f"Is seq2seq? {is_seq2seq}")
 
     extra_kwargs = {}
     if is_seq2seq:
         extra_kwargs["max_target_length"] = data_args.max_target_length
-    else: # is_seq2seq:
+    else: # not is_seq2seq:
         global_labels = defaultdict(int)
         extra_kwargs["label_dict"] = global_labels
 
@@ -155,12 +155,9 @@ def main():
         split: dataset_classes[split](tokenizer,
                                                readers[split].read(path),
                                                max_seq_length,
-
                                                name=split,
                                                test_mode=False,
-                                      **extra_kwargs
-
-                                               )
+                                      **extra_kwargs)
         for split, path in data_files.items()
     }
 
