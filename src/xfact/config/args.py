@@ -76,11 +76,19 @@ class DataTrainingArguments:
         default="classification",
         metadata={"help": "Dataset dataset"}
     )
-    experiment_name: Optional[str] = field(
+    experiment_key: Optional[str] = field(
         default=None,
-        metadata={"help": "Experiment name"}
+        metadata={"help": "Experiment key"}
     )
     out_file: Optional[str] = field(default=None, metadata={"help":"Save predictions to this file"})
+    workspace: Optional[str] = field(
+        default=None,
+        metadata={"help": "Experiment workspace"}
+    )
+    comet_key: Optional[str] = field(
+        default=None,
+        metadata={"help": "Experiment Key for Comet"}
+    )
     project_name: Optional[str] = field(
         default=None,
         metadata={"help": "Experiment project"}
@@ -102,7 +110,7 @@ class DataTrainingArguments:
         metadata={"help": "The number of processes to use for the preprocessing."},
     )
     max_seq_length: int = field(
-        default=192,
+        default=128,
         metadata={
             "help": "The maximum total input sequence length after tokenization. Sequences longer "
             "than this will be truncated, sequences shorter will be padded."

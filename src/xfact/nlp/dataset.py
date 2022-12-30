@@ -29,8 +29,9 @@ class XFactDataset(TorchDataset, Registrable, ABC):
     ):
         super().__init__()
 
+
         # Default sep token. If tokenizer has a sep token, this will be ignored.
-        self.sep_token = sep_token
+        self.sep_token = tokenizer._sep_token or sep_token
 
         # Set class specific things
         self.max_source_length = max_source_length
@@ -236,8 +237,8 @@ class XFactTaggingDataset(XFactDataset):
 
 
 class XFactClassificationDataset(XFactDataset, ABC):
-    def __init__(self, tokenizer, instance_generator, max_source_length,**kwargs):
-        self.label_dict = defaultdict(int)
+    def __init__(self, tokenizer, instance_generator, max_source_length, label_dict=None, **kwargs):
+        self.label_dict = defaultdict(int) if label_dict is None else label_dict
         super().__init__(tokenizer, instance_generator, max_source_length,**kwargs)
 
     def prepare_tgt(self, instance):
@@ -254,6 +255,7 @@ class XFactClassificationDataset(XFactDataset, ABC):
 
         source_ids = source_inputs["input_ids"].squeeze()
         src_mask = source_inputs["attention_mask"].squeeze()
+        src_types = source_inputs["token_type_ids"].squeeze() if "token_type_ids" in source_inputs else None
 
         if not self.blind_test_mode:
             target_input = self.prepare_tgt(instance)
@@ -276,10 +278,39 @@ class XFactClassificationDataset(XFactDataset, ABC):
 
         ret = {
             "input_ids": source_ids,
-            "attention_mask": src_mask
+            "attention_mask": src_mask,
+            "token_type_ids": src_types
         }
 
         if not self.blind_test_mode:
-            ret["decoder_input_ids"] = target_ids
+            ret["label_ids"] = target_ids
 
         return ret
+
+    @staticmethod
+    def collate_fn(model, batch, pad_token_id, ignore_pad_token_for_loss=True) -> Dict[str, torch.Tensor]:
+        input_ids = torch.stack([x["input_ids"] for x in batch])
+        masks = torch.stack([x["attention_mask"] for x in batch])
+
+        # types = torch.stack([x["token_type_ids"] for x in batch]) if "token_type_ids" in batch[0] and batch[0]["token_type_ids"] is not None else None
+
+        # source_ids, source_mask, source_types = trim_batch(
+        #     input_ids, pad_token_id, attention_mask=masks, token_type_ids=types
+        # )
+
+        source_ids, source_mask = input_ids,masks
+            # ,types
+        ret_batch = {
+            "input_ids": source_ids,
+            "attention_mask": source_mask,
+            # "token_type_ids": source_types
+        }
+
+        if "label_ids" in batch[0]:
+            target_ids = torch.stack([x["label_ids"] for x in batch])
+            ret_batch["labels"] = target_ids
+
+
+            # ret_batch["decoder_input_ids"] = y
+
+        return ret_batch

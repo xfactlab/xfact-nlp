@@ -1,3 +1,4 @@
 transformers==4.16.2
 fever-drqa
 sklearn
+comet-ml

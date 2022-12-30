@@ -42,6 +42,7 @@ class XFactClsTrainer(Trainer):
                 # self.args.prediction_loss_only
                 prediction_loss_only=True if compute_metrics is None else None,
                 ignore_keys=ignore_keys,
+                metric_key_prefix=metric_key_prefix
             )
         finally:
             self.compute_metrics = compute_metrics

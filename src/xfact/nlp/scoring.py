@@ -1,5 +1,8 @@
 import numpy as np
 from abc import ABC
+
+from transformers import EvalPrediction
+
 from xfact.registry.registrable import Registrable
 
 

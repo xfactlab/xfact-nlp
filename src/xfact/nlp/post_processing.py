@@ -42,7 +42,8 @@ class LabelOnly(PostProcessor):
         predicted = [trainer.model.config.id2label[p] for p in predictions.predictions.argmax(axis=-1)]
         actual = [trainer.model.config.id2label[p.item()] for p in predictions.label_ids]
 
-        assert len(actual) == len(examples) == len(predicted)
+        assert len(actual) == len(predicted)
+        assert not examples or len(examples) == len(actual)
 
         return {
             "predicted": predicted,

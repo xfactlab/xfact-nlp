@@ -55,7 +55,6 @@ def encode_line(
         **extra_kw,
     )
 
-
 def lmap(f: Callable, x: Iterable) -> List:
     """list(map(f, x))"""
     return list(map(f, x))
@@ -65,13 +64,16 @@ def trim_batch(
     input_ids,
     pad_token_id,
     attention_mask=None,
+    token_type_ids=None,
 ):
     """Remove columns that are populated exclusively by pad_token_id"""
     keep_column_mask = input_ids.ne(pad_token_id).any(dim=0)
-    if attention_mask is None:
+    if attention_mask is None and token_type_ids is None:
         return input_ids[:, keep_column_mask]
-    else:
+    elif attention_mask is not None and token_type_ids is None:
         return input_ids[:, keep_column_mask], attention_mask[:, keep_column_mask]
+    else:
+        return input_ids[:, keep_column_mask], attention_mask[:, keep_column_mask], token_type_ids[:, keep_column_mask]
 
 
 class SortishSampler(Sampler):

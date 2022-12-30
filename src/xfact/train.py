@@ -1,30 +1,24 @@
+import comet_ml
 import logging
 import os
 import sys
+from collections import defaultdict
 from operator import itemgetter
-import transformers
 
+import transformers
 from transformers import (
     AutoConfig,
     AutoTokenizer,
-    BartTokenizer,
     HfArgumentParser,
     TrainingArguments,
-    set_seed, T5ForConditionalGeneration, BartForConditionalGeneration, AutoModelForSeq2SeqLM,
-    AutoModelForSequenceClassification, Trainer
+    set_seed, AutoModelForSeq2SeqLM,
+    AutoModelForSequenceClassification
 )
-from transformers.trainer_utils import get_last_checkpoint, EvalLoopOutput
+from transformers.trainer_utils import get_last_checkpoint
 from transformers.utils import check_min_version
+
 from xfact.config.args import ModelArguments, DataTrainingArguments
-
-
-# from deardr.inference.post_processing import post_process
-# from deardr.inference.prefix_decoder import single_document_prefix, multi_document_prefix
-# from deardr.inference.scoring import precision, recall, r_precision, macro, f1, max_over_many, average_precision, \
-#     recall_corrected, precision_corrected, reciprocal_rank, average_precision_corrected
-
-# from deardr.training.comet_logging_callback import CometTrainingCallback
-# from deardr.training.deardr_trainer import DearDrTrainer
+from xfact.logs.comet_callback import CometTrainingCallback
 from xfact.logs.logs import setup_logging
 from xfact.nlp.dataset import XFactDataset, XFactSeq2SeqDataset
 from xfact.nlp.deardr_trainer import DearDrTrainer, XFactClsTrainer
@@ -33,11 +27,11 @@ from xfact.nlp.reader import Reader
 from xfact.nlp.scoring import Scorer
 from xfact.registry.module import import_submodules
 
+
+
+
 check_min_version("4.16.0")
 logger = logging.getLogger(__name__)
-
-
-
 
 
 def main():
@@ -50,12 +44,7 @@ def main():
         model_args, data_args, training_args, remaining_args = parser.parse_args_into_dataclasses(return_remaining_strings=True)
 
     setup_logging(training_args.get_process_log_level())
-    # # Setup logging
-    # logging.basicConfig(
-    #     format="%(asctime)s - %(levelname)s - %(name)s - %(message)s",
-    #     datefmt="%m/%d/%Y %H:%M:%S",
-    #     handlers=[logging.StreamHandler(sys.stdout)],
-    # )
+
     transformers.utils.logging.set_verbosity(training_args.get_process_log_level())
     transformers.utils.logging.enable_default_handler()
     transformers.utils.logging.enable_explicit_format()
@@ -71,15 +60,15 @@ def main():
     )
 
     logger.info(f"Training/evaluation parameters {training_args}")
-    if training_args.should_log and (training_args.do_train or training_args.do_eval):
-        # experiment = Experiment(
-        #     api_key="J60JdZqL6pTDlG7a81H7o40up",
-        #     workspace="j6mes",
-        #     project_name=data_args.project_name if data_args.project_name is not None else f"atm_{data_args.dataset_reader}",
-        #     experiment_key=data_args.experiment_name if data_args.experiment_name is not None else None
-        # )
-        experiment = None
-        # experiment.log_parameters(training_args.to_dict())
+    if data_args.comet_key and training_args.should_log and (training_args.do_train or training_args.do_eval):
+        experiment = comet_ml.Experiment(
+            api_key=data_args.comet_key,
+            workspace=data_args.workspace,
+            project_name=data_args.project_name if data_args.project_name is not None else f"debugging-xfact",
+            experiment_key=data_args.experiment_key if data_args.experiment_key is not None else None,
+
+        )
+        experiment.log_parameters(training_args.to_dict())
     else:
         experiment = None
 
@@ -156,14 +145,17 @@ def main():
     logger.info(f"Is seq2seq? {is_seq2seq}")
 
     extra_kwargs = {}
-
     if is_seq2seq:
         extra_kwargs["max_target_length"] = data_args.max_target_length
+    else: # is_seq2seq:
+        global_labels = defaultdict(int)
+        extra_kwargs["label_dict"] = global_labels
 
     loaded_datasets = {
         split: dataset_classes[split](tokenizer,
                                                readers[split].read(path),
                                                max_seq_length,
+
                                                name=split,
                                                test_mode=False,
                                       **extra_kwargs
@@ -171,10 +163,6 @@ def main():
                                                )
         for split, path in data_files.items()
     }
-
-    # Don't use true/false check here as 0 is falsey
-
-
 
     if training_args.do_train:
         if "train" not in loaded_datasets:
@@ -216,26 +204,17 @@ def main():
 
     )
 
-
     if len(tokenizer.vocab) > tok_length:
         print("resizing vocab")
         model.resize_token_embeddings(len(tokenizer))
 
-
-
-
     data_collator = lambda batch: dataset_cls.collate_fn(model, batch, tokenizer.pad_token_id, data_args.ignore_pad_token_for_loss)
     post_processor = PostProcessor.init(data_args.post_processor, **{"tokenizer": tokenizer, "model": model})
     scorer = Scorer.init(data_args.scorer)
-
-
-
-    # logging_callback = CometTrainingCallback(experiment)
+    logging_callback = CometTrainingCallback(experiment)
     trainer_cls = DearDrTrainer if is_seq2seq else XFactClsTrainer # Maybe do multiple beams with DearDrPredictor but this is SLLOOOOWWWW
-
+    # data_collator = default_data_collator
     # prefix_decode = single_document_prefix if  isinstance(readers["validation"], PretrainPT) else multi_document_prefix
-
-
 
     trainer = trainer_cls(
         model=model,
@@ -249,7 +228,7 @@ def main():
         post_process_function=post_processor.process_text,
         # train_beam=data_args.train_beam,
         # prefix_decode=prefix_decode(tokenizer, model_args.prefix_path),
-        # callbacks=[logging_callback]
+        callbacks=[logging_callback]
     )
 
 
@@ -290,7 +269,7 @@ def main():
         trainer.save_metrics("eval", metrics)
 
         if trainer.is_world_process_zero() and experiment:
-            experiment.log(payload={"final/" + key: value for key, value in metrics.items()})
+            experiment.log_metrics(dic={"final/" + key: value for key, value in metrics.items()})
 
     kwargs = {"finetuned_from": model_args.model_name_or_path, "tasks": "dear-dr"}
 

@@ -5,7 +5,9 @@ from xfact.nlp.reader import Reader
 @XFactDataset.register("snli")
 class SNLIDataset(XFactClassificationDataset):
     def prepare_src(self, instance):
-        return instance["sentence1"] + " ::: " + instance["sentence2"]
+        return instance["sentence1"] + \
+               " " + self.sep_token + " " + \
+               instance["sentence2"]
 
 
 @Reader.register("snli")
