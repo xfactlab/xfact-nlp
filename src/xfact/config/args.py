@@ -52,8 +52,12 @@ class DataTrainingArguments:
     """
     Arguments pertaining to what data we are going to input our model for training and eval.
     """
-
+    trainer: str = field(
+            default="default",
+            metadata={"help":"NewTrainer"}
+    )
     dataset: str = field(
+        default="default",
         metadata={"help": "Dataset dataset"}
     )
     validation_dataset: Optional[str] = field(

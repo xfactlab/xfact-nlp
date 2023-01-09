@@ -5,9 +5,10 @@ from xfact.registry.registrable import Registrable
 
 class PostProcessor(Registrable, ABC):
 
-    def __init__(self, model, tokenizer):
+    def __init__(self, model, tokenizer, **kwargs):
         self.model = model
         self.tokenizer = tokenizer
+        self.__dict__.update(kwargs)
 
     def process_text(self, examples, features, predictions, trainer):
         raise NotImplementedError()

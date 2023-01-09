@@ -21,12 +21,12 @@ from xfact.config.args import ModelArguments, DataTrainingArguments
 from xfact.logs.comet_callback import CometTrainingCallback
 from xfact.logs.logs import setup_logging
 from xfact.nlp.dataset import XFactDataset, XFactSeq2SeqDataset
-from xfact.nlp.deardr_trainer import DearDrTrainer, XFactClsTrainer
+from xfact.nlp.deardr_trainer import DearDrTrainer, XFactClsTrainer,NewTrainer
 from xfact.nlp.post_processing import PostProcessor
 from xfact.nlp.reader import Reader
 from xfact.nlp.scoring import Scorer
 from xfact.registry.module import import_submodules
-
+from argparse import ArgumentParser
 
 
 
@@ -161,6 +161,8 @@ def main():
         for split, path in data_files.items()
     }
 
+
+
     if training_args.do_train:
         if "train" not in loaded_datasets:
             raise ValueError("--do_train requires a train dataset")
@@ -206,13 +208,14 @@ def main():
         model.resize_token_embeddings(len(tokenizer))
 
     data_collator = lambda batch: dataset_cls.collate_fn(model, batch, tokenizer.pad_token_id, data_args.ignore_pad_token_for_loss)
-    post_processor = PostProcessor.init(data_args.post_processor, **{"tokenizer": tokenizer, "model": model})
+    
+    post_processor = PostProcessor.init(data_args.post_processor, **{"tokenizer": tokenizer, "model": model, "id2label":readers["validation"].id2label})
     scorer = Scorer.init(data_args.scorer)
     logging_callback = CometTrainingCallback(experiment)
     trainer_cls = DearDrTrainer if is_seq2seq else XFactClsTrainer # Maybe do multiple beams with DearDrPredictor but this is SLLOOOOWWWW
     # data_collator = default_data_collator
     # prefix_decode = single_document_prefix if  isinstance(readers["validation"], PretrainPT) else multi_document_prefix
-
+    
     trainer = trainer_cls(
         model=model,
         args=training_args,
@@ -250,6 +253,7 @@ def main():
         trainer.log_metrics("train", metrics)
         trainer.save_metrics("train", metrics)
         trainer.save_state()
+
 
     # Evaluation
     if training_args.do_eval:
