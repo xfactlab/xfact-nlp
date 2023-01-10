@@ -32,16 +32,13 @@ class InformationRetrievalScorer(Scorer):
 class InformationRetrievalScorer(Scorer):
 
     def __call__(self, actual, predicted, **kwargs):
+        rec = macro(recall, actual, predicted)
+        pr = macro(precision, actual, predicted)
         return {
-            "macro_recall": macro(recall, actual, predicted),
-            "macro_precision": macro(precision, actual, predicted),
-            "macro_f1": macro(f1, actual, predicted),
+            "macro_recall": rec,
+            "macro_precision": pr,
+            "macro_f1": f1(pr,rec),
             "macro_r_precision": macro(r_precision, actual, predicted),
-            "macro_average_precision": macro(average_precision, actual, predicted),
-            "macro_recall_corrected": macro(recall_corrected, actual, predicted),
-            "macro_precision_corrected": macro(precision_corrected, actual, predicted),
-            "macro_reciprocal_rank": macro(reciprocal_rank, actual, predicted),
-            "macro_average_precision_corrected": macro(average_precision_corrected, actual, predicted)
         }
 
 
@@ -192,9 +189,7 @@ def r_precision(actual, predicted):
     )
 
 
-def f1(actual, predicted):
-    prec = precision(actual, predicted)
-    rec = recall(actual, predicted)
+def f1(prec, rec):
     return 2*prec*rec/(prec+rec) if prec+rec > 0 else 0
 
 
