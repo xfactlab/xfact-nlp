@@ -121,10 +121,9 @@ def main():
     max_seq_length = min(data_args.max_seq_length, tokenizer.model_max_length)
 
 
-    reader_cls = XFactDataset.resolve(data_args.reader)
     reader_classes = {
-        "train": XFactDataset.resolve(reader_cls),
-        "validation": XFactDataset.resolve(data_args.validation_reader or reader_cls)
+        "train": Reader.resolve(data_args.reader),
+        "validation": Reader.resolve(data_args.validation_reader or data_args.validation_reader)
     }
 
     readers = {
