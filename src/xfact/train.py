@@ -120,26 +120,24 @@ def main():
         )
     max_seq_length = min(data_args.max_seq_length, tokenizer.model_max_length)
 
-    dataset_cls = XFactDataset.resolve(data_args.dataset)
-    reader = Reader.init(data_args.reader)
 
-    dataset_classes = {
-        "train": dataset_cls
+    reader_cls = XFactDataset.resolve(data_args.reader)
+    reader_classes = {
+        "train": XFactDataset.resolve(reader_cls),
+        "validation": XFactDataset.resolve(data_args.validation_reader or reader_cls)
     }
 
     readers = {
-        "train": reader
+        "train": reader_classes["train"](),
+        "validation": reader_classes["validation"](test_mode=True)
     }
 
-    if data_args.validation_dataset is not None:
-        validation_reader = Reader.init(data_args.validation_reader)
-        validation_dataset_cls = XFactDataset.resolve(data_args.validation_dataset)
 
-        dataset_classes["validation"] = validation_dataset_cls
-        readers["validation"] = validation_reader
-    else:
-        dataset_classes["validation"] = dataset_classes["train"]
-        readers["validation"] = readers["train"]
+    dataset_classes = {
+        "train": XFactDataset.resolve(data_args.dataset),
+        "validation":  XFactDataset.resolve(data_args.validation_dataset or data_args.dataset)
+    }
+
 
     is_seq2seq = issubclass(dataset_classes["train"],XFactSeq2SeqDataset)
     logger.info(f"Is seq2seq? {is_seq2seq}")
