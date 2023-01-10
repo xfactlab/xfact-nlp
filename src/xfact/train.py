@@ -123,7 +123,7 @@ def main():
 
     reader_classes = {
         "train": Reader.resolve(data_args.reader),
-        "validation": Reader.resolve(data_args.validation_reader or data_args.validation_reader)
+        "validation": Reader.resolve(data_args.validation_reader or data_args.reader)
     }
 
     readers = {
