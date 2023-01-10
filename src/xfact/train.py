@@ -202,7 +202,7 @@ def main():
         print("resizing vocab")
         model.resize_token_embeddings(len(tokenizer))
 
-    data_collator = lambda batch: dataset_cls.collate_fn(model, batch, tokenizer.pad_token_id, data_args.ignore_pad_token_for_loss)
+    data_collator = lambda batch: dataset_classes["train"].collate_fn(model, batch, tokenizer.pad_token_id, data_args.ignore_pad_token_for_loss)
     post_processor = PostProcessor.init(data_args.post_processor, **{"tokenizer": tokenizer, "model": model})
     scorer = Scorer.init(data_args.scorer)
     logging_callback = CometTrainingCallback(experiment)
