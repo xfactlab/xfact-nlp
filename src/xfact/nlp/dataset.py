@@ -294,7 +294,7 @@ class XFactClassificationDataset(XFactDataset, ABC):
 
         # types = torch.stack([x["token_type_ids"] for x in batch]) if "token_type_ids" in batch[0] and batch[0]["token_type_ids"] is not None else None
 
-        source_ids, source_mask, source_types = trim_batch(
+        source_ids, source_mask = trim_batch(
             input_ids, pad_token_id, attention_mask=masks
         )
 
