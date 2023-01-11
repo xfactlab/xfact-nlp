@@ -72,6 +72,10 @@ class DataTrainingArguments:
         default="default",
         metadata={"help": "Dataset dataset"}
     )
+    weighted_loss: Optional[bool] = field(
+        default=True,
+        metadata={"help": "Weighted loss function for classes"}
+    )
     scorer: Optional[str] = field(
         default="classification",
         metadata={"help": "Dataset dataset"}

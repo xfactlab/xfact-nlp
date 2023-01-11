@@ -178,6 +178,9 @@ def main():
         extra_model_kwargs["label2id"] = loaded_datasets["train"].label_dict
         extra_model_kwargs["id2label"] = {v:k for k,v in loaded_datasets["train"].label_dict.items()}
 
+        if data_args.weighted_loss:
+            extra_model_kwargs["class_weights"] = loaded_datasets["train"].class_weights
+
     config = AutoConfig.from_pretrained(
         model_args.config_name if model_args.config_name else model_args.model_name_or_path,
         cache_dir=model_args.cache_dir,
@@ -222,7 +225,8 @@ def main():
         post_process_function=post_processor.process_text,
         # train_beam=data_args.train_beam,
         # prefix_decode=prefix_decode(tokenizer, model_args.prefix_path),
-        callbacks=[logging_callback]
+        callbacks=[logging_callback],
+
     )
 
 

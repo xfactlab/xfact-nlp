@@ -1,6 +1,7 @@
 import logging
+import operator
 from abc import ABC
-from collections import defaultdict
+from collections import defaultdict, Counter
 
 import torch
 from torch.utils.data import Dataset as TorchDataset
@@ -240,6 +241,15 @@ class XFactClassificationDataset(XFactDataset, ABC):
     def __init__(self, tokenizer, instance_generator, max_source_length, label_dict=None, **kwargs):
         self.label_dict = defaultdict(int) if label_dict is None else label_dict
         super().__init__(tokenizer, instance_generator, max_source_length,**kwargs)
+        self.class_weights = self.get_label_distribution()
+
+    def get_label_distribution(self):
+        label_counts = Counter(map(operator.itemgetter("label"), self.instances))
+
+        logger.info(f"Class sizes: {label_counts}")
+        summed = sum(label_counts.values())
+        return {k:v/summed for k,v in label_counts.items()}
+
 
     def prepare_tgt(self, instance):
         return instance["label"]
