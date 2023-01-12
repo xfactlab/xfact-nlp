@@ -168,7 +168,7 @@ def main():
     #
     #
 
-    model = ModelFactory.resolve(model_args.model_factory).get_model(
+    model = ModelFactory.resolve(model_args.model_factory)().get_model(
         model_args.model_name_or_path,
         tokenizer,
         loaded_datasets,
