@@ -40,7 +40,7 @@ class DefaultPostProcessor(PostProcessor):
 class LabelOnly(PostProcessor):
     def process_text(self, examples, features, predictions, trainer):
         predicted = [trainer.model.config.id2label[p] for p in predictions.predictions.argmax(axis=-1)]
-        actual = [trainer.model.config.id2label[p.item()] for p in predictions.label_ids]
+        actual = [f['label'] for f in features.instances]
 
         assert len(actual) == len(predicted)
         assert not examples or len(examples) == len(actual)
