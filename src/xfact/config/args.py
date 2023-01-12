@@ -10,9 +10,14 @@ class ModelArguments:
     model_name_or_path: str = field(
         metadata={"help": "Path to pretrained model or model identifier from huggingface.co/models"}
     )
+
+    model_factory: Optional[str] = field(
+        default="huggingface",
+        metadata={"help": "model factory to use"}
+    )
     predict_single:Optional[bool] = field(
         default=False,
-        metadata={"help": "Limit decoder to signel output"}
+        metadata={"help": "Limit decoder to single output"}
     )
     prefix_path : Optional[str] = field(
         metadata={"help": "Path to TRIE file"},

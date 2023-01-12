@@ -22,6 +22,7 @@ from xfact.logs.comet_callback import CometTrainingCallback
 from xfact.logs.logs import setup_logging
 from xfact.nlp.dataset import XFactDataset, XFactSeq2SeqDataset
 from xfact.nlp.deardr_trainer import DearDrTrainer, XFactClsTrainer
+from xfact.nlp.model import ModelFactory
 from xfact.nlp.post_processing import PostProcessor
 from xfact.nlp.reader import Reader
 from xfact.nlp.scoring import Scorer
@@ -111,7 +112,6 @@ def main():
         use_auth_token=True if model_args.use_auth_token else None,
     )
 
-    tok_length = len(tokenizer.vocab)
 
     if data_args.max_seq_length > tokenizer.model_max_length:
         logger.warning(
@@ -168,42 +168,15 @@ def main():
     #
     #
 
-    extra_model_kwargs = {}
-    if is_seq2seq:
-        model_cls = AutoModelForSeq2SeqLM
-
-    else:
-        model_cls = AutoModelForSequenceClassification
-        extra_model_kwargs["num_labels"] = len(loaded_datasets["train"].label_dict)
-        extra_model_kwargs["label2id"] = loaded_datasets["train"].label_dict
-        extra_model_kwargs["id2label"] = {v:k for k,v in loaded_datasets["train"].label_dict.items()}
-
-        if data_args.weighted_loss:
-            extra_model_kwargs["class_weights"] = loaded_datasets["train"].class_weights
-
-    config = AutoConfig.from_pretrained(
-        model_args.config_name if model_args.config_name else model_args.model_name_or_path,
-        cache_dir=model_args.cache_dir,
-        revision=model_args.model_revision,
-        use_auth_token=True if model_args.use_auth_token else None,
-        **extra_model_kwargs
-    )
-    if model_args.dropout_rate is not None:
-        config.dropout_rate = model_args.dropout_rate
-
-    model = model_cls.from_pretrained(
+    model = ModelFactory.resolve(model_args.model_factory).get_model(
         model_args.model_name_or_path,
-        from_tf=bool(".ckpt" in model_args.model_name_or_path),
-        config=config,
-        cache_dir=model_args.cache_dir,
-        revision=model_args.model_revision,
-        use_auth_token=True if model_args.use_auth_token else None,
+        tokenizer,
+        loaded_datasets,
+        model_args,
+        data_args
 
     )
 
-    if len(tokenizer.vocab) > tok_length:
-        print("resizing vocab")
-        model.resize_token_embeddings(len(tokenizer))
 
     data_collator = lambda batch: dataset_classes["train"].collate_fn(model, batch, tokenizer.pad_token_id, data_args.ignore_pad_token_for_loss)
     post_processor = PostProcessor.init(data_args.post_processor, **{"tokenizer": tokenizer, "model": model})
