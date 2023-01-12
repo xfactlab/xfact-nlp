@@ -241,7 +241,11 @@ class XFactClassificationDataset(XFactDataset, ABC):
     def __init__(self, tokenizer, instance_generator, max_source_length, label_dict=None, **kwargs):
         self.label_dict = defaultdict(int) if label_dict is None else label_dict
         super().__init__(tokenizer, instance_generator, max_source_length,**kwargs)
-        self.class_weights = self.get_label_distribution()
+
+        try:
+            self.class_weights = self.get_label_distribution()
+        except KeyError:
+            logger.error("Not possible to determine label distribution. Check that instance contains a label")
 
     def get_label_distribution(self):
         label_counts = Counter(map(operator.itemgetter("label"), self.instances))
