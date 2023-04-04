@@ -153,7 +153,7 @@ def main():
                                                readers[split].read(path),
                                                max_seq_length,
                                                name=split,
-                                               test_mode=not split == "train",
+                                               # test_mode=not split == "train",
                                       **extra_kwargs)
         for split, path in data_files.items()
     }
