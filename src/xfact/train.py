@@ -36,6 +36,7 @@ logger = logging.getLogger(__name__)
 
 
 def main():
+    remaining_args = None
     parser = HfArgumentParser((ModelArguments, DataTrainingArguments, TrainingArguments))
     if len(sys.argv) == 2 and sys.argv[1].endswith(".json"):
         # If we pass only one argument to the script and it's the path to a json file,
@@ -44,11 +45,17 @@ def main():
     else:
         model_args, data_args, training_args, remaining_args = parser.parse_args_into_dataclasses(return_remaining_strings=True)
 
+
+
     setup_logging(training_args.get_process_log_level())
 
     transformers.utils.logging.set_verbosity(training_args.get_process_log_level())
     transformers.utils.logging.enable_default_handler()
     transformers.utils.logging.enable_explicit_format()
+
+    if remaining_args:
+        logger.error(f"Extra args found: {remaining_args}")
+        raise Exception("Extra args")
 
     if data_args.package:
         logger.info("Trying to load project packages")
@@ -179,7 +186,7 @@ def main():
 
 
     data_collator = lambda batch: dataset_classes["train"].collate_fn(model, batch, tokenizer.pad_token_id, data_args.ignore_pad_token_for_loss)
-    post_processor = PostProcessor.init(data_args.post_processor, **{"tokenizer": tokenizer, "model": model})
+    post_processor = PostProcessor.init(data_args.nti, **{"tokenizer": tokenizer, "model": model})
     scorer = Scorer.init(data_args.scorer)
     logging_callback = CometTrainingCallback(experiment)
     trainer_cls = DearDrTrainer if is_seq2seq else XFactClsTrainer # Maybe do multiple beams with DearDrPredictor but this is SLLOOOOWWWW
