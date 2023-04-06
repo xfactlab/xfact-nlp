@@ -186,7 +186,7 @@ def main():
 
 
     data_collator = lambda batch: dataset_classes["train"].collate_fn(model, batch, tokenizer.pad_token_id, data_args.ignore_pad_token_for_loss)
-    post_processor = PostProcessor.init(data_args.nti, **{"tokenizer": tokenizer, "model": model})
+    post_processor = PostProcessor.init(data_args.post_processor, **{"tokenizer": tokenizer, "model": model})
     scorer = Scorer.init(data_args.scorer)
     logging_callback = CometTrainingCallback(experiment)
     trainer_cls = DearDrTrainer if is_seq2seq else XFactClsTrainer # Maybe do multiple beams with DearDrPredictor but this is SLLOOOOWWWW
