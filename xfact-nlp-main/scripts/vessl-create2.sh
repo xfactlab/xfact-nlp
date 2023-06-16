@@ -1,0 +1,12 @@
+vessl experiment create \
+  --organization "kaist-jtlab" \
+  --project "deardr" \
+  --image-url "j6mes/dev-env" \
+  --cluster "cluster-2080" \
+  --resource "gpu-1" \
+  --command "bash scripts/deardr/pretrain.sh 1 \$reader \$learning_rate \$batch_size \$steps \$eval_freq" \
+  --working-dir /root/deardr --root-volume-size "100Gi" --output-dir "/output/" \
+  --git-ref "/root/deardr:github/j6mes/deardr/bec74bafc52c9d23b2f1c03285f45d1a63362a3e" \
+  --dataset "/deardr/:kaist-jtlab/deardr" \
+  --dataset "/fever/:kaist-jtlab/fever" \
+  -h reader=pretrain_hl -h learning_rate=1e-5 -h batch_size=8 -h steps=1 -h eval_freq=400
