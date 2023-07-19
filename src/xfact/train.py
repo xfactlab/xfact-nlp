@@ -12,7 +12,7 @@ from transformers import (
     HfArgumentParser,
     TrainingArguments,
     set_seed, AutoModelForSeq2SeqLM,
-    AutoModelForSequenceClassification
+    AutoModelForSequenceClassification, Seq2SeqTrainingArguments
 )
 from transformers.trainer_utils import get_last_checkpoint
 from transformers.utils import check_min_version
@@ -37,7 +37,7 @@ logger = logging.getLogger(__name__)
 
 def main():
     remaining_args = None
-    parser = HfArgumentParser((ModelArguments, DataTrainingArguments, TrainingArguments))
+    parser = HfArgumentParser((ModelArguments, DataTrainingArguments, Seq2SeqTrainingArguments))
     if len(sys.argv) == 2 and sys.argv[1].endswith(".json"):
         # If we pass only one argument to the script and it's the path to a json file,
         # let's parse it to get our arguments.
