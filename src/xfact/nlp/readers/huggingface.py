@@ -1,7 +1,7 @@
 from xfact.nlp import Reader
 from xfact.logs.logs import setup_logging
 import logging
-import datasets
+
 import os
 
 
@@ -16,6 +16,11 @@ class HuggingFaceReader(Reader):
         self.test_mode = test_mode
 
     def read(self, path):
+        try:
+            import datasets
+        except ImportError:
+            raise ImportError("Datasets library must be installed")
+
         logger.info("reading instances from {}".format(path))
         path, split = path.rsplit(":",maxsplit=1)
         self.dataset = datasets.load_dataset(path)
