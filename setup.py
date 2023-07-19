@@ -20,6 +20,7 @@ setup(
     packages=["xfact",
               "xfact.nlp",
               "xfact.nlp.datasets",
+              "xfact.nlp.readers",
               "xfact.config",
               "xfact.logs",
               "xfact.registry",
