@@ -76,12 +76,13 @@ def main():
         params.update(asdict(training_args))
         params.update(asdict(data_args))
         params.update(asdict(model_args))
-        wandb.init(
+        run = wandb.init(
             # set the wandb project where this run will be logged
             project=data_args.project_name,
             # track hyperparameters and run metadata
             config=params
         )
+
 
 
     if data_args.comet_key and training_args.should_log and (training_args.do_train or training_args.do_eval):
@@ -205,7 +206,7 @@ def main():
     post_processor = PostProcessor.init(data_args.post_processor, **{"tokenizer": tokenizer, "model": model})
     scorer = Scorer.init(data_args.scorer)
     c_logging_callback = CometTrainingCallback(experiment)
-    w_logging_callback = WANDBTrainingCallback(wandb)
+    w_logging_callback = WANDBTrainingCallback(run)
 
     trainer_cls = DearDrTrainer if is_seq2seq else XFactClsTrainer # Maybe do multiple beams with DearDrPredictor but this is SLLOOOOWWWW
     # data_collator = default_data_collator
@@ -270,6 +271,7 @@ def main():
         if training_args.should_log:
             wandb.log({"final/" + key: value for key, value in metrics.items()})
 
+    run.finish()
 
 def _mp_fn(index):
     # For xla_spawn (TPUs)
