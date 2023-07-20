@@ -12,4 +12,4 @@ class WANDBTrainingCallback(TrainerCallback):
     def on_log(self, args: TrainingArguments, state: TrainerState, control: TrainerControl, **kwargs):
         if self.expt is not None and args.local_rank <= 0:
             logger.info("Saving logs to WandB")
-            self.expt.log(dic={"train/" + key: value for key, value in state.log_history[-1].items()})
+            self.expt.log({"train/" + key: value for key, value in state.log_history[-1].items()})

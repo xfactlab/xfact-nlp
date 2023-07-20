@@ -266,7 +266,7 @@ def main():
         trainer.save_metrics("eval", metrics)
 
         if trainer.is_world_process_zero() and experiment:
-            experiment.log_metrics(dic={"final/" + key: value for key, value in metrics.items()})
+            experiment.log_metrics({"final/" + key: value for key, value in metrics.items()})
 
         if training_args.should_log:
             wandb.log({"final/" + key: value for key, value in metrics.items()})
