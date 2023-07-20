@@ -268,10 +268,11 @@ def main():
         if trainer.is_world_process_zero() and experiment:
             experiment.log_metrics({"final/" + key: value for key, value in metrics.items()})
 
-        if training_args.should_log:
-            wandb.log({"final/" + key: value for key, value in metrics.items()})
+        if training_args.should_log and run:
+            run.log({"final/" + key: value for key, value in metrics.items()})
 
-    run.finish()
+    if run:
+        run.finish()
 
 def _mp_fn(index):
     # For xla_spawn (TPUs)
