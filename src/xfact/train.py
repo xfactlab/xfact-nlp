@@ -82,8 +82,8 @@ def main():
             # track hyperparameters and run metadata
             config=params
         )
-
-
+    else:
+        run = None
 
     if data_args.comet_key and training_args.should_log and (training_args.do_train or training_args.do_eval):
         experiment = comet_ml.Experiment(
