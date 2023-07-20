@@ -2,3 +2,4 @@ fever-drqa
 scikit-learn
 comet-ml
 transformers>=4.31.0
+wandb

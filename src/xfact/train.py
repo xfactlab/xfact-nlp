@@ -2,9 +2,10 @@ import comet_ml
 import logging
 import os
 import sys
+import wandb
 from collections import defaultdict
 from operator import itemgetter
-
+from dataclasses import asdict
 import transformers
 from transformers import (
     AutoConfig,
@@ -20,6 +21,7 @@ from transformers.utils import check_min_version
 from xfact.config.args import ModelArguments, DataTrainingArguments
 from xfact.logs.comet_callback import CometTrainingCallback
 from xfact.logs.logs import setup_logging
+from xfact.logs.wandb_callback import WANDBTrainingCallback
 from xfact.nlp.dataset import XFactDataset, XFactSeq2SeqDataset
 from xfact.nlp.deardr_trainer import DearDrTrainer, XFactClsTrainer
 from xfact.nlp.model import ModelFactory
@@ -68,6 +70,20 @@ def main():
     )
 
     logger.info(f"Training/evaluation parameters {training_args}")
+
+    if training_args.should_log:
+        params = {}
+        params.update(asdict(training_args))
+        params.update(asdict(data_args))
+        params.update(asdict(model_args))
+        wandb.init(
+            # set the wandb project where this run will be logged
+            project=data_args.project_name,
+            # track hyperparameters and run metadata
+            config=params
+        )
+
+
     if data_args.comet_key and training_args.should_log and (training_args.do_train or training_args.do_eval):
         experiment = comet_ml.Experiment(
             api_key=data_args.comet_key,
@@ -188,7 +204,9 @@ def main():
     data_collator = lambda batch: dataset_classes["train"].collate_fn(model, batch, tokenizer.pad_token_id, data_args.ignore_pad_token_for_loss)
     post_processor = PostProcessor.init(data_args.post_processor, **{"tokenizer": tokenizer, "model": model})
     scorer = Scorer.init(data_args.scorer)
-    logging_callback = CometTrainingCallback(experiment)
+    c_logging_callback = CometTrainingCallback(experiment)
+    w_logging_callback = WANDBTrainingCallback(wandb)
+
     trainer_cls = DearDrTrainer if is_seq2seq else XFactClsTrainer # Maybe do multiple beams with DearDrPredictor but this is SLLOOOOWWWW
     # data_collator = default_data_collator
     # prefix_decode = single_document_prefix if  isinstance(readers["validation"], PretrainPT) else multi_document_prefix
@@ -205,7 +223,7 @@ def main():
         post_process_function=post_processor.process_text,
         # train_beam=data_args.train_beam,
         # prefix_decode=prefix_decode(tokenizer, model_args.prefix_path),
-        callbacks=[logging_callback],
+        callbacks=[c_logging_callback, w_logging_callback],
 
     )
 
@@ -249,12 +267,8 @@ def main():
         if trainer.is_world_process_zero() and experiment:
             experiment.log_metrics(dic={"final/" + key: value for key, value in metrics.items()})
 
-    kwargs = {"finetuned_from": model_args.model_name_or_path, "tasks": "dear-dr"}
-
-    if training_args.push_to_hub:
-        trainer.push_to_hub(**kwargs)
-    else:
-        trainer.create_model_card(**kwargs)
+        if training_args.should_log:
+            wandb.log({"final/" + key: value for key, value in metrics.items()})
 
 
 def _mp_fn(index):
